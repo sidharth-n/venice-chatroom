@@ -13,9 +13,9 @@ const Message: React.FC<MessageProps> = ({ message, isLeftSide }) => {
       <div className="flex justify-center mb-4 sm:mb-6">
         <div className="bg-venice-beige text-venice-olive-brown px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl border border-venice-stone border-opacity-40 max-w-[95%] sm:max-w-[90%]">
           <div className="flex items-center justify-center mb-1">
-            <span className="text-xs font-semibold text-venice-olive-brown">Topic</span>
+            <span className="text-sm font-semibold text-venice-olive-brown">Topic</span>
           </div>
-          <p className="text-xs sm:text-sm leading-relaxed text-center italic">"{message.content}"</p>
+          <p className="text-sm sm:text-base leading-relaxed text-center italic">"{message.content}"</p>
         </div>
       </div>
     );
@@ -31,18 +31,18 @@ const Message: React.FC<MessageProps> = ({ message, isLeftSide }) => {
             : 'bg-venice-olive-brown text-venice-white rounded-br-md'
         }`}>
           <div className="flex items-center space-x-2 mb-1">
-            <span className={`text-xs font-semibold ${
+            <span className={`text-sm font-semibold ${
               isLeftSide ? 'text-venice-olive-brown' : 'text-venice-cream'
             }`}>
               {message.character}
             </span>
-            <span className={`text-xs ${
+            <span className={`text-sm ${
               isLeftSide ? 'text-venice-dark-olive' : 'text-venice-beige'
             }`}>
               {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
-          <p className="text-xs sm:text-sm leading-relaxed">{message.content}</p>
+          <p className="text-sm sm:text-base leading-relaxed">{message.content}</p>
         </div>
       </div>
     </div>

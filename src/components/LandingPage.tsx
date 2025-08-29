@@ -29,7 +29,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStartSetup }) => {
               <span className="text-venice-bright-red font-cursive">Venice</span>
               <span className="text-venice-olive-brown font-cursive ml-1 sm:ml-2">Chatroom</span>
             </h1>
-            <p className="text-venice-dark-olive text-base sm:text-lg font-light leading-relaxed px-2 sm:px-4">
+            <p className="text-venice-dark-olive text-lg sm:text-xl font-light leading-relaxed px-2 sm:px-4">
               Watch AI characters converse in real-time
             </p>
           </div>
@@ -38,7 +38,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStartSetup }) => {
           <div className="pt-6 sm:pt-8">
             <button
               onClick={onStartSetup}
-              className="w-full bg-venice-bright-red text-venice-white py-3 sm:py-4 px-6 sm:px-8 rounded-2xl font-medium text-base sm:text-lg shadow-lg hover:bg-venice-muted-red active:bg-venice-dark transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-venice-bright-red text-venice-white py-3 sm:py-4 px-6 sm:px-8 rounded-2xl font-medium text-lg sm:text-xl shadow-lg hover:bg-venice-muted-red active:bg-venice-dark transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
             >
               Start Chatroom
             </button>

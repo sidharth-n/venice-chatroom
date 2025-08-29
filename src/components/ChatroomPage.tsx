@@ -36,14 +36,14 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="text-center">
-            <h2 className="text-lg font-semibold text-venice-olive-brown">
+            <h2 className="text-xl font-semibold text-venice-olive-brown">
               {character1Name} & {character2Name}
             </h2>
-            <p className="text-xs text-venice-dark-olive">AI Conversation</p>
+            <p className="text-sm text-venice-dark-olive">AI Conversation</p>
           </div>
           <button
             onClick={onReset}
-            className="text-sm text-venice-dark-olive hover:text-venice-olive-brown transition-colors"
+            className="text-base text-venice-dark-olive hover:text-venice-olive-brown transition-colors"
           >
             Reset
           </button>
@@ -65,7 +65,7 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
           <button
             onClick={onGenerateNextMessage}
             disabled={isGenerating}
-            className="w-full bg-venice-bright-red text-venice-white py-3 sm:py-4 px-4 sm:px-6 rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:bg-venice-muted-red active:bg-venice-dark transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-venice-bright-red text-venice-white py-3 sm:py-4 px-4 sm:px-6 rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:bg-venice-muted-red active:bg-venice-dark transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isGenerating ? (
               <>

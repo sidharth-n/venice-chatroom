@@ -15,10 +15,10 @@ const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({ characterName, is
             : 'bg-venice-olive-brown bg-opacity-10 border-venice-olive-brown border-opacity-20 rounded-br-md'
         }`}>
           <div className="flex items-center space-x-2 mb-1">
-            <span className="text-xs font-semibold text-venice-olive-brown">
+            <span className="text-sm font-semibold text-venice-olive-brown">
               {characterName}
             </span>
-            <span className="text-xs text-venice-dark-olive">thinking...</span>
+            <span className="text-sm text-venice-dark-olive">thinking...</span>
           </div>
           <div className="flex space-x-1">
             <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-venice-stone rounded-full animate-bounce"></div>
