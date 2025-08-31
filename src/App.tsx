@@ -1,7 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PageType, Message } from './types';
 import { getCharacterName, getCharacterSlug } from './utils';
 import { callVeniceApi, VeniceMessage } from './services/veniceApi';
+import { 
+  generateStorageKey, 
+  saveConversation, 
+  loadConversation, 
+  clearConversation,
+  cleanupOldConversations 
+} from './utils/localStorage';
 import LandingPage from './components/LandingPage';
 import SetupPage from './components/SetupPage';
 import ChatroomPage from './components/ChatroomPage';
@@ -17,6 +24,42 @@ const App: React.FC = () => {
 
   const character1Name = getCharacterName(character1Url);
   const character2Name = getCharacterName(character2Url);
+  
+  // Generate storage key for current conversation
+  const storageKey = character1Name && character2Name 
+    ? generateStorageKey(character1Name, character2Name)
+    : '';
+
+  // Load conversation on component mount and cleanup old conversations
+  useEffect(() => {
+    cleanupOldConversations();
+  }, []);
+
+  // Load saved conversation when both characters are set
+  useEffect(() => {
+    if (storageKey && currentPage === 'chatroom') {
+      const savedConversation = loadConversation(storageKey);
+      if (savedConversation) {
+        setMessages(savedConversation.messages);
+        setCurrentTurn(savedConversation.currentTurn);
+      }
+    }
+  }, [storageKey, currentPage]);
+
+  // Save conversation whenever messages change
+  useEffect(() => {
+    if (storageKey && messages.length > 0) {
+      const conversationState = {
+        messages,
+        currentTurn,
+        initialPrompt,
+        character1Url,
+        character2Url,
+        timestamp: Date.now()
+      };
+      saveConversation(storageKey, conversationState);
+    }
+  }, [messages, currentTurn, storageKey, initialPrompt, character1Url, character2Url]);
 
   const startSetup = () => {
     setCurrentPage('setup');
@@ -100,6 +143,11 @@ const App: React.FC = () => {
   };
 
   const resetApp = () => {
+    // Clear saved conversation from localStorage
+    if (storageKey) {
+      clearConversation(storageKey);
+    }
+    
     setCurrentPage('landing');
     setMessages([]);
     setCurrentTurn(1);
