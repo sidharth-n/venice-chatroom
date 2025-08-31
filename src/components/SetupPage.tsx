@@ -1,6 +1,5 @@
 import React from 'react';
 import { Users, ArrowLeft, Send } from 'lucide-react';
-import { getCharacterName } from '../utils';
 
 interface SetupPageProps {
   character1Url: string;
@@ -25,8 +24,6 @@ const SetupPage: React.FC<SetupPageProps> = ({
   onBack,
   onSelectCharacter
 }) => {
-  const character1Name = getCharacterName(character1Url);
-  const character2Name = getCharacterName(character2Url);
 
   return (
     <div className="min-h-screen bg-venice-cream flex flex-col">
@@ -76,9 +73,6 @@ const SetupPage: React.FC<SetupPageProps> = ({
                   </button>
                 </div>
               </div>
-              {character1Url && (
-                <p className="text-base sm:text-lg text-venice-dark-olive mt-1">Character: {character1Name}</p>
-              )}
             </div>
 
             <div>
@@ -102,9 +96,6 @@ const SetupPage: React.FC<SetupPageProps> = ({
                   </button>
                 </div>
               </div>
-              {character2Url && (
-                <p className="text-base sm:text-lg text-venice-dark-olive mt-1">Character: {character2Name}</p>
-              )}
             </div>
 
             <div>
