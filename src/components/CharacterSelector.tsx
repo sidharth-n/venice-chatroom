@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { VeniceCharacter, fetchVeniceCharacters } from '../services/veniceApi';
-import { ArrowLeft, Search, Users, Star } from 'lucide-react';
+import { ArrowLeft, Search, Users, Star, X, Calendar, Hash, Globe, MessageCircle } from 'lucide-react';
 
 interface CharacterSelectorProps {
   onCharacterSelect: (character: VeniceCharacter) => void;
@@ -25,6 +25,7 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   const [selectedTag, setSelectedTag] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCharacterForPopup, setSelectedCharacterForPopup] = useState<VeniceCharacter | null>(null);
 
   const filterCharacters = useCallback(() => {
     let filtered = characters;
@@ -90,9 +91,18 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   };
 
   const handleCharacterClick = (character: VeniceCharacter) => {
+    setSelectedCharacterForPopup(character);
+  };
+
+  const handleSelectFromPopup = (character: VeniceCharacter) => {
     if (!isCharacterSelected(character)) {
       onCharacterSelect(character);
     }
+    setSelectedCharacterForPopup(null);
+  };
+
+  const closePopup = () => {
+    setSelectedCharacterForPopup(null);
   };
 
   if (loading) {
@@ -210,13 +220,7 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
               <div
                 key={character.slug}
                 onClick={() => handleCharacterClick(character)}
-                className={`
-                  bg-venice-white rounded-lg p-4 sm:p-6 shadow-sm border transition-all duration-200 cursor-pointer
-                  ${isSelected 
-                    ? 'border-green-500 bg-green-50 cursor-not-allowed' 
-                    : 'border-venice-stone border-opacity-20 hover:border-venice-red hover:shadow-md'
-                  }
-                `}
+                className="bg-venice-white rounded-lg p-4 sm:p-6 shadow-sm border border-venice-stone border-opacity-20 hover:border-venice-red hover:shadow-md transition-all duration-200 cursor-pointer"
               >
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="text-lg sm:text-xl font-bold text-venice-olive-brown line-clamp-2">{character.name}</h3>
@@ -276,6 +280,118 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
             >
               Clear Filters
             </button>
+          </div>
+        )}
+
+        {/* Character Detail Popup */}
+        {selectedCharacterForPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-venice-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
+              {/* Popup Header */}
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-venice-stone border-opacity-20">
+                <h2 className="text-xl sm:text-2xl font-bold text-venice-olive-brown">Character Details</h2>
+                <button
+                  onClick={closePopup}
+                  className="p-2 hover:bg-venice-cream rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5 text-venice-stone" />
+                </button>
+              </div>
+
+              {/* Popup Content */}
+              <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+                <div className="space-y-6">
+                  {/* Character Name */}
+                  <div>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-venice-olive-brown mb-2">
+                      {selectedCharacterForPopup.name}
+                    </h3>
+                  </div>
+
+                  {/* Character Stats */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    <div className="flex items-center space-x-2 text-sm text-venice-dark-olive">
+                      <Star className="w-4 h-4" />
+                      <span>{selectedCharacterForPopup.stats.imports} imports</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm text-venice-dark-olive">
+                      {selectedCharacterForPopup.webEnabled ? (
+                        <>
+                          <Globe className="w-4 h-4" />
+                          <span>Web Enabled</span>
+                        </>
+                      ) : (
+                        <>
+                          <MessageCircle className="w-4 h-4" />
+                          <span>Chat Only</span>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm text-venice-dark-olive">
+                      <Calendar className="w-4 h-4" />
+                      <span>{new Date(selectedCharacterForPopup.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-venice-olive-brown mb-3">Description</h4>
+                    <p className="text-venice-dark-olive leading-relaxed">
+                      {selectedCharacterForPopup.description}
+                    </p>
+                  </div>
+
+                  {/* Tags */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-venice-olive-brown mb-3 flex items-center">
+                      <Hash className="w-4 h-4 mr-1" />
+                      Tags
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedCharacterForPopup.tags.map(tag => (
+                        <span
+                          key={tag}
+                          className="bg-venice-cream text-venice-olive-brown text-sm px-3 py-1 rounded-full border border-venice-stone border-opacity-30"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Character URL */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-venice-olive-brown mb-3">Character URL</h4>
+                    <div className="bg-venice-cream p-3 rounded-lg border border-venice-stone border-opacity-20">
+                      <code className="text-sm text-venice-dark-olive break-all">
+                        {selectedCharacterForPopup.shareUrl}
+                      </code>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Popup Footer */}
+              <div className="flex flex-col sm:flex-row gap-3 p-4 sm:p-6 border-t border-venice-stone border-opacity-20">
+                <button
+                  onClick={closePopup}
+                  className="flex-1 px-4 py-3 bg-venice-stone text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => handleSelectFromPopup(selectedCharacterForPopup)}
+                  disabled={isCharacterSelected(selectedCharacterForPopup)}
+                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
+                    isCharacterSelected(selectedCharacterForPopup)
+                      ? 'bg-green-500 text-white cursor-not-allowed'
+                      : 'bg-venice-red text-white hover:bg-red-700'
+                  }`}
+                >
+                  {isCharacterSelected(selectedCharacterForPopup) ? 'Already Selected' : 'Select Character'}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

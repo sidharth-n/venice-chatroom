@@ -83,26 +83,26 @@ const analyzeMessageContext = (lastMessage: string): ResponseType => {
 
 // Dynamic response configuration based on conversation flow and context
 const getResponseConfig = (messageCount: number, lastMessage?: string): ResponseConfig => {
-  // Base configurations for different response types
+  // Base configurations for different response types with sufficient tokens for complete responses
   const baseConfigs = {
     reaction: [
-      { maxTokens: 8, promptSuffix: 'Respond with just a few words like "Yeah", "I see", "True", "Exactly", or similar natural reactions.' },
-      { maxTokens: 12, promptSuffix: 'Give a brief acknowledgment or agreement/disagreement (3-6 words max).' },
-      { maxTokens: 15, promptSuffix: 'React naturally with curiosity, surprise, or understanding (very brief).' }
+      { maxTokens: 25, promptSuffix: 'Respond with just a few words like "Yeah", "I see", "True", "Exactly", or similar natural reactions.' },
+      { maxTokens: 30, promptSuffix: 'Give a brief acknowledgment or agreement/disagreement (3-6 words max).' },
+      { maxTokens: 35, promptSuffix: 'React naturally with curiosity, surprise, or understanding (very brief).' }
     ],
     short: [
-      { maxTokens: 20, promptSuffix: 'Give a concise but complete response (1 sentence).' },
-      { maxTokens: 30, promptSuffix: 'Respond briefly but meaningfully (1-2 short sentences).' },
-      { maxTokens: 25, promptSuffix: 'Keep it short and natural (1-2 sentences max).' }
+      { maxTokens: 60, promptSuffix: 'Give a concise but complete response (1 sentence).' },
+      { maxTokens: 80, promptSuffix: 'Respond briefly but meaningfully (1-2 short sentences).' },
+      { maxTokens: 70, promptSuffix: 'Keep it short and natural (1-2 sentences max).' }
     ],
     medium: [
-      { maxTokens: 50, promptSuffix: 'Provide a thoughtful response (2-3 sentences).' },
-      { maxTokens: 70, promptSuffix: 'Elaborate on your thoughts (2-3 sentences).' },
-      { maxTokens: 60, promptSuffix: 'Give a balanced, conversational response.' }
+      { maxTokens: 120, promptSuffix: 'Provide a thoughtful response (2-3 sentences).' },
+      { maxTokens: 150, promptSuffix: 'Elaborate on your thoughts (2-3 sentences).' },
+      { maxTokens: 130, promptSuffix: 'Give a balanced, conversational response.' }
     ],
     detailed: [
-      { maxTokens: 90, promptSuffix: 'Share your perspective in detail (3-4 sentences).' },
-      { maxTokens: 120, promptSuffix: 'Provide a comprehensive but conversational response.' }
+      { maxTokens: 200, promptSuffix: 'Share your perspective in detail (3-4 sentences).' },
+      { maxTokens: 250, promptSuffix: 'Provide a comprehensive but conversational response.' }
     ]
   };
   

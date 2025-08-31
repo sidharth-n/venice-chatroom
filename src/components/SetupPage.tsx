@@ -59,17 +59,17 @@ const SetupPage: React.FC<SetupPageProps> = ({
               <label className="block text-base sm:text-lg font-semibold text-venice-olive-brown mb-2">
                 Character 1 URL
               </label>
-              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <div className="relative">
                 <input
                   type="text"
                   value={character1Url}
                   onChange={(e) => setCharacter1Url(e.target.value)}
                   placeholder="https://venice.ai/c/character-name"
-                  className="flex-1 px-4 py-3 border border-venice-stone border-opacity-30 rounded-lg focus:outline-none focus:ring-2 focus:ring-venice-red focus:border-transparent text-sm sm:text-base"
+                  className="w-full px-4 py-3 border border-venice-stone border-opacity-30 rounded-lg focus:outline-none focus:ring-2 focus:ring-venice-red focus:border-transparent text-sm sm:text-base"
                 />
                 <button
                   onClick={() => onSelectCharacter(1)}
-                  className="px-4 py-3 bg-venice-red text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap text-sm sm:text-base font-medium"
+                  className="absolute bottom-1 right-1 text-xs text-venice-red hover:text-red-700 transition-colors underline"
                 >
                   Browse Characters
                 </button>
@@ -83,17 +83,17 @@ const SetupPage: React.FC<SetupPageProps> = ({
               <label className="block text-base sm:text-lg font-semibold text-venice-olive-brown mb-2">
                 Character 2 URL
               </label>
-              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <div className="relative">
                 <input
                   type="text"
                   value={character2Url}
                   onChange={(e) => setCharacter2Url(e.target.value)}
                   placeholder="https://venice.ai/c/character-name"
-                  className="flex-1 px-4 py-3 border border-venice-stone border-opacity-30 rounded-lg focus:outline-none focus:ring-2 focus:ring-venice-red focus:border-transparent text-sm sm:text-base"
+                  className="w-full px-4 py-3 border border-venice-stone border-opacity-30 rounded-lg focus:outline-none focus:ring-2 focus:ring-venice-red focus:border-transparent text-sm sm:text-base"
                 />
                 <button
                   onClick={() => onSelectCharacter(2)}
-                  className="px-4 py-3 bg-venice-red text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap text-sm sm:text-base font-medium"
+                  className="absolute bottom-1 right-1 text-xs text-venice-red hover:text-red-700 transition-colors underline"
                 >
                   Browse Characters
                 </button>
