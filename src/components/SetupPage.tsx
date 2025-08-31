@@ -6,22 +6,24 @@ interface SetupPageProps {
   character1Url: string;
   character2Url: string;
   initialPrompt: string;
-  onCharacter1UrlChange: (url: string) => void;
-  onCharacter2UrlChange: (url: string) => void;
-  onInitialPromptChange: (prompt: string) => void;
+  setCharacter1Url: (url: string) => void;
+  setCharacter2Url: (url: string) => void;
+  setInitialPrompt: (prompt: string) => void;
   onStartChatroom: () => void;
-  onGoBack: () => void;
+  onBack: () => void;
+  onSelectCharacter: (target: 1 | 2) => void;
 }
 
 const SetupPage: React.FC<SetupPageProps> = ({
   character1Url,
   character2Url,
   initialPrompt,
-  onCharacter1UrlChange,
-  onCharacter2UrlChange,
-  onInitialPromptChange,
+  setCharacter1Url,
+  setCharacter2Url,
+  setInitialPrompt,
   onStartChatroom,
-  onGoBack
+  onBack,
+  onSelectCharacter
 }) => {
   const character1Name = getCharacterName(character1Url);
   const character2Name = getCharacterName(character2Url);
@@ -32,8 +34,8 @@ const SetupPage: React.FC<SetupPageProps> = ({
       <div className="bg-venice-white shadow-sm border-b border-venice-stone border-opacity-30 p-4">
         <div className="flex items-center justify-between">
           <button
-            onClick={onGoBack}
-            className="flex items-center space-x-2 text-venice-dark-olive hover:text-venice-olive-brown transition-colors"
+            onClick={onBack}
+            className="flex items-center space-x-2 text-venice-stone hover:text-venice-black transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             <span>Back</span>
@@ -57,13 +59,21 @@ const SetupPage: React.FC<SetupPageProps> = ({
               <label className="block text-base sm:text-lg font-semibold text-venice-olive-brown mb-2">
                 Character 1 URL
               </label>
-              <input
-                type="url"
-                value={character1Url}
-                onChange={(e) => onCharacter1UrlChange(e.target.value)}
-                placeholder="https://venice.ai/c/character-name"
-                className="w-full px-4 sm:px-5 py-3 sm:py-4 text-lg sm:text-xl border border-venice-stone border-opacity-40 rounded-xl focus:ring-2 focus:ring-venice-bright-red focus:border-transparent outline-none transition-all duration-200 bg-venice-white"
-              />
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={character1Url}
+                  onChange={(e) => setCharacter1Url(e.target.value)}
+                  placeholder="https://venice.ai/c/character-name"
+                  className="flex-1 px-4 py-3 border border-venice-stone border-opacity-30 rounded-lg focus:outline-none focus:ring-2 focus:ring-venice-red focus:border-transparent"
+                />
+                <button
+                  onClick={() => onSelectCharacter(1)}
+                  className="px-4 py-3 bg-venice-red text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap"
+                >
+                  Browse Characters
+                </button>
+              </div>
               {character1Url && (
                 <p className="text-base sm:text-lg text-venice-dark-olive mt-1">Character: {character1Name}</p>
               )}
@@ -73,13 +83,21 @@ const SetupPage: React.FC<SetupPageProps> = ({
               <label className="block text-base sm:text-lg font-semibold text-venice-olive-brown mb-2">
                 Character 2 URL
               </label>
-              <input
-                type="url"
-                value={character2Url}
-                onChange={(e) => onCharacter2UrlChange(e.target.value)}
-                placeholder="https://venice.ai/c/character-name"
-                className="w-full px-4 sm:px-5 py-3 sm:py-4 text-lg sm:text-xl border border-venice-stone border-opacity-40 rounded-xl focus:ring-2 focus:ring-venice-bright-red focus:border-transparent outline-none transition-all duration-200 bg-venice-white"
-              />
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={character2Url}
+                  onChange={(e) => setCharacter2Url(e.target.value)}
+                  placeholder="https://venice.ai/c/character-name"
+                  className="flex-1 px-4 py-3 border border-venice-stone border-opacity-30 rounded-lg focus:outline-none focus:ring-2 focus:ring-venice-red focus:border-transparent"
+                />
+                <button
+                  onClick={() => onSelectCharacter(2)}
+                  className="px-4 py-3 bg-venice-red text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap"
+                >
+                  Browse Characters
+                </button>
+              </div>
               {character2Url && (
                 <p className="text-base sm:text-lg text-venice-dark-olive mt-1">Character: {character2Name}</p>
               )}
@@ -91,10 +109,10 @@ const SetupPage: React.FC<SetupPageProps> = ({
               </label>
               <textarea
                 value={initialPrompt}
-                onChange={(e) => onInitialPromptChange(e.target.value)}
-                placeholder="What should the characters discuss? (e.g., 'Discuss the meaning of life and happiness')"
+                onChange={(e) => setInitialPrompt(e.target.value)}
+                placeholder="Describe the scenario or conversation starter..."
                 rows={4}
-                className="w-full px-4 sm:px-5 py-3 sm:py-4 text-lg sm:text-xl border border-venice-stone border-opacity-40 rounded-xl focus:ring-2 focus:ring-venice-bright-red focus:border-transparent outline-none transition-all duration-200 resize-none bg-venice-white"
+                className="w-full px-4 py-3 border border-venice-stone border-opacity-30 rounded-lg focus:outline-none focus:ring-2 focus:ring-venice-red focus:border-transparent resize-none"
               />
             </div>
 

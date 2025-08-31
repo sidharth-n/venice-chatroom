@@ -5,7 +5,7 @@ export interface Message {
   timestamp: Date;
 }
 
-export type PageType = 'landing' | 'setup' | 'chatroom';
+export type PageType = 'landing' | 'setup' | 'chatroom' | 'character-selector';
 
 export interface AppState {
   currentPage: PageType;

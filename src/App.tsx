@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PageType, Message } from './types';
 import { getCharacterName, getCharacterSlug } from './utils';
-import { callVeniceApi, VeniceMessage } from './services/veniceApi';
+import { callVeniceApi, VeniceMessage, VeniceCharacter } from './services/veniceApi';
 import { 
   generateStorageKey, 
   saveConversation, 
@@ -12,6 +12,7 @@ import {
 import LandingPage from './components/LandingPage';
 import SetupPage from './components/SetupPage';
 import ChatroomPage from './components/ChatroomPage';
+import CharacterSelector from './components/CharacterSelector';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageType>('landing');
@@ -21,6 +22,8 @@ const App: React.FC = () => {
   const [currentTurn, setCurrentTurn] = useState<1 | 2>(1);
   const [initialPrompt, setInitialPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [characterSelectorTarget, setCharacterSelectorTarget] = useState<1 | 2>(1);
+  const [selectedCharacters, setSelectedCharacters] = useState<VeniceCharacter[]>([]);
 
   const character1Name = getCharacterName(character1Url);
   const character2Name = getCharacterName(character2Url);
@@ -159,9 +162,31 @@ const App: React.FC = () => {
 
   const goBackToSetup = () => {
     setCurrentPage('setup');
-    setMessages([]);
-    setCurrentTurn(1);
-    setIsGenerating(false);
+  };
+
+  const openCharacterSelector = (target: 1 | 2) => {
+    setCharacterSelectorTarget(target);
+    setCurrentPage('character-selector');
+  };
+
+  const handleCharacterSelect = (character: VeniceCharacter) => {
+    if (characterSelectorTarget === 1) {
+      setCharacter1Url(character.shareUrl);
+    } else {
+      setCharacter2Url(character.shareUrl);
+    }
+    
+    // Update selected characters list
+    setSelectedCharacters(prev => {
+      const filtered = prev.filter(c => c.slug !== character.slug);
+      return [...filtered, character];
+    });
+    
+    setCurrentPage('setup');
+  };
+
+  const backFromCharacterSelector = () => {
+    setCurrentPage('setup');
   };
 
   if (currentPage === 'landing') {
@@ -172,13 +197,25 @@ const App: React.FC = () => {
     return (
       <SetupPage
         character1Url={character1Url}
+        setCharacter1Url={setCharacter1Url}
         character2Url={character2Url}
+        setCharacter2Url={setCharacter2Url}
         initialPrompt={initialPrompt}
-        onCharacter1UrlChange={setCharacter1Url}
-        onCharacter2UrlChange={setCharacter2Url}
-        onInitialPromptChange={setInitialPrompt}
+        setInitialPrompt={setInitialPrompt}
         onStartChatroom={startChatroom}
-        onGoBack={() => setCurrentPage('landing')}
+        onBack={resetApp}
+        onSelectCharacter={openCharacterSelector}
+      />
+    );
+  }
+
+  if (currentPage === 'character-selector') {
+    return (
+      <CharacterSelector
+        onCharacterSelect={handleCharacterSelect}
+        onBack={backFromCharacterSelector}
+        selectedCharacters={selectedCharacters}
+        title={`Select Character ${characterSelectorTarget}`}
       />
     );
   }

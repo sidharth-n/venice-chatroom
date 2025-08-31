@@ -2,8 +2,28 @@ const VENICE_API_URL = 'https://api.venice.ai/api/v1/chat/completions';
 const API_KEY = import.meta.env.VITE_VENICE_API_KEY;
 
 export interface VeniceMessage {
+  role: 'system' | 'user' | 'assistant';
   content: string;
-  role: 'user' | 'assistant' | 'system';
+}
+
+export interface VeniceCharacter {
+  adult: boolean;
+  createdAt: string;
+  description: string;
+  name: string;
+  shareUrl: string;
+  slug: string;
+  stats: {
+    imports: number;
+  };
+  tags: string[];
+  updatedAt: string;
+  webEnabled: boolean;
+}
+
+export interface VeniceCharactersResponse {
+  data: VeniceCharacter[];
+  object: string;
 }
 
 export interface VeniceApiRequest {
@@ -192,6 +212,33 @@ export const callVeniceApi = async (
     return data.choices[0].message.content;
   } catch (error) {
     console.error('Venice API Error:', error);
-    throw new Error('Failed to get response from Venice AI');
+    throw new Error('Failed to generate response from Venice API');
+  }
+};
+
+// Fetch available characters from Venice API
+export const fetchVeniceCharacters = async (): Promise<VeniceCharacter[]> => {
+  if (!API_KEY) {
+    throw new Error('Venice API key is not configured');
+  }
+
+  try {
+    const response = await fetch('https://api.venice.ai/api/v1/characters', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch characters: ${response.status} ${response.statusText}`);
+    }
+
+    const data: VeniceCharactersResponse = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error('Failed to fetch Venice characters:', error);
+    throw new Error('Failed to load character list');
   }
 };
