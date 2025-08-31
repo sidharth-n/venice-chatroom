@@ -163,12 +163,12 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
       <div className="max-w-6xl mx-auto p-4 sm:p-6">
         {/* Stats and Search */}
         <div className="text-center mb-6">
-          <div className="flex items-center justify-center mb-4">
+         {/*  <div className="flex items-center justify-center mb-4">
             <Users className="w-8 h-8 text-venice-olive-brown mr-2" />
             <p className="text-lg text-venice-dark-olive">
-              Choose from <span className="font-semibold">{characters.length}</span> available characters
+              Choose from <span className="font-semibold">100s of</span> available characters
             </p>
-          </div>
+          </div> */}
         </div>
 
         {/* Search and Filter Controls */}
@@ -208,9 +208,9 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
           </div>
 
           {/* Results Count */}
-          <div className="mt-4 text-venice-dark-olive text-sm">
+          {/* <div className="mt-4 text-venice-dark-olive text-sm">
             Showing <span className="font-semibold">{filteredCharacters.length}</span> of <span className="font-semibold">{characters.length}</span> characters
-          </div>
+          </div> */}
         </div>
 
         {/* Character Grid */}
@@ -265,53 +265,111 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center space-x-4 mb-8">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className="flex items-center space-x-2 px-4 py-2 bg-venice-white border border-venice-stone border-opacity-30 rounded-lg hover:bg-venice-cream transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Previous</span>
-            </button>
-            
-            <div className="flex items-center space-x-2">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
-                }
-                
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={`w-10 h-10 rounded-lg font-medium transition-colors ${
-                      currentPage === pageNum
-                        ? 'bg-venice-red text-white'
-                        : 'bg-venice-white border border-venice-stone border-opacity-30 text-venice-olive-brown hover:bg-venice-cream'
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4 mb-8 px-4">
+            {/* Mobile: Stack buttons vertically */}
+            <div className="flex sm:hidden w-full justify-between items-center">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="flex items-center space-x-1 px-3 py-2 bg-venice-white border border-venice-stone border-opacity-30 rounded-lg hover:bg-venice-cream transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Prev</span>
+              </button>
+              
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 2) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 1) {
+                    pageNum = totalPages - 2 + i;
+                  } else {
+                    pageNum = currentPage - 1 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-8 h-8 rounded-lg font-medium transition-colors text-sm ${
+                        currentPage === pageNum
+                          ? 'bg-venice-red text-white'
+                          : 'bg-venice-white border border-venice-stone border-opacity-30 text-venice-olive-brown hover:bg-venice-cream'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="flex items-center space-x-1 px-3 py-2 bg-venice-white border border-venice-stone border-opacity-30 rounded-lg hover:bg-venice-cream transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                <span>Next</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
-            
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-              className="flex items-center space-x-2 px-4 py-2 bg-venice-white border border-venice-stone border-opacity-30 rounded-lg hover:bg-venice-cream transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span>Next</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
+
+            {/* Desktop: Horizontal layout */}
+            <div className="hidden sm:flex items-center space-x-4">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="flex items-center space-x-2 px-4 py-2 bg-venice-white border border-venice-stone border-opacity-30 rounded-lg hover:bg-venice-cream transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Previous</span>
+              </button>
+              
+              <div className="flex items-center space-x-2">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-10 h-10 rounded-lg font-medium transition-colors ${
+                        currentPage === pageNum
+                          ? 'bg-venice-red text-white'
+                          : 'bg-venice-white border border-venice-stone border-opacity-30 text-venice-olive-brown hover:bg-venice-cream'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="flex items-center space-x-2 px-4 py-2 bg-venice-white border border-venice-stone border-opacity-30 rounded-lg hover:bg-venice-cream transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span>Next</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Page info for mobile */}
+            <div className="sm:hidden text-xs text-venice-dark-olive">
+              Page {currentPage} of {totalPages}
+            </div>
           </div>
         )}
 
