@@ -1,18 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { VeniceCharacter, fetchVeniceCharacters } from '../services/veniceApi';
+import { ArrowLeft, Search, Users, Star } from 'lucide-react';
 
 interface CharacterSelectorProps {
   onCharacterSelect: (character: VeniceCharacter) => void;
   onBack: () => void;
   selectedCharacters: VeniceCharacter[];
   title: string;
+  cachedCharacters: VeniceCharacter[] | null;
+  setCachedCharacters: (characters: VeniceCharacter[]) => void;
 }
 
 const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   onCharacterSelect,
   onBack,
   selectedCharacters,
-  title
+  title,
+  cachedCharacters,
+  setCachedCharacters
 }) => {
   const [characters, setCharacters] = useState<VeniceCharacter[]>([]);
   const [filteredCharacters, setFilteredCharacters] = useState<VeniceCharacter[]>([]);
@@ -21,28 +26,7 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadCharacters();
-  }, []);
-
-  useEffect(() => {
-    filterCharacters();
-  }, [characters, searchTerm, selectedTag]);
-
-  const loadCharacters = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchVeniceCharacters();
-      setCharacters(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load characters');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filterCharacters = () => {
+  const filterCharacters = useCallback(() => {
     let filtered = characters;
 
     // Filter by search term
@@ -62,6 +46,38 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
     }
 
     setFilteredCharacters(filtered);
+  }, [characters, searchTerm, selectedTag]);
+
+  useEffect(() => {
+    loadCharacters();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    filterCharacters();
+  }, [filterCharacters]);
+
+  const loadCharacters = async () => {
+    try {
+      setLoading(true);
+      
+      // Use cached characters if available
+      if (cachedCharacters && cachedCharacters.length > 0) {
+        setCharacters(cachedCharacters);
+        setError(null);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch fresh data if no cache
+      const data = await fetchVeniceCharacters();
+      setCharacters(data);
+      setCachedCharacters(data); // Cache the results
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load characters');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getAllTags = () => {
@@ -81,10 +97,10 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-900 via-black to-red-900 flex items-center justify-center">
+      <div className="min-h-screen bg-venice-cream flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-400 mx-auto mb-4"></div>
-          <p className="text-red-200">Loading characters...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-venice-red mx-auto mb-4"></div>
+          <p className="text-venice-olive-brown text-lg">Loading characters...</p>
         </div>
       </div>
     );
@@ -92,21 +108,21 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-900 via-black to-red-900 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-400 text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-red-200 mb-4">Error Loading Characters</h2>
-          <p className="text-red-300 mb-6">{error}</p>
+      <div className="min-h-screen bg-venice-cream flex items-center justify-center p-4">
+        <div className="text-center max-w-md mx-auto">
+          <div className="text-venice-red text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-venice-olive-brown mb-4">Error Loading Characters</h2>
+          <p className="text-venice-dark-olive mb-6">{error}</p>
           <div className="space-y-3">
             <button
               onClick={loadCharacters}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+              className="w-full bg-venice-red hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
             >
               Try Again
             </button>
             <button
               onClick={onBack}
-              className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+              className="w-full bg-venice-stone hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
             >
               Go Back
             </button>
@@ -117,20 +133,40 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-900 via-black to-red-900 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-red-200 mb-2">{title}</h1>
-          <p className="text-red-300">Choose from {characters.length} available characters</p>
+    <div className="min-h-screen bg-venice-cream">
+      {/* Header */}
+      <div className="bg-venice-white shadow-sm border-b border-venice-stone border-opacity-30 p-4">
+        <div className="flex items-center justify-between max-w-6xl mx-auto">
+          <button
+            onClick={onBack}
+            className="flex items-center space-x-2 text-venice-stone hover:text-venice-black transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="hidden sm:inline">Back to Setup</span>
+          </button>
+          <h1 className="text-xl sm:text-2xl font-semibold text-venice-olive-brown">{title}</h1>
+          <div className="w-20 sm:w-28" />
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto p-4 sm:p-6">
+        {/* Stats and Search */}
+        <div className="text-center mb-6">
+          <div className="flex items-center justify-center mb-4">
+            <Users className="w-8 h-8 text-venice-olive-brown mr-2" />
+            <p className="text-lg text-venice-dark-olive">
+              Choose from <span className="font-semibold">{characters.length}</span> available characters
+            </p>
+          </div>
         </div>
 
         {/* Search and Filter Controls */}
-        <div className="bg-black/30 rounded-lg p-6 mb-8 backdrop-blur-sm border border-red-800/30">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-venice-white rounded-lg p-4 sm:p-6 mb-6 shadow-sm border border-venice-stone border-opacity-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Search Input */}
             <div>
-              <label className="block text-red-200 text-sm font-bold mb-2">
+              <label className="block text-sm font-semibold text-venice-olive-brown mb-2">
+                <Search className="w-4 h-4 inline mr-1" />
                 Search Characters
               </label>
               <input
@@ -138,19 +174,19 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by name, description, or tags..."
-                className="w-full px-4 py-3 bg-black/50 border border-red-800/50 rounded-lg text-red-100 placeholder-red-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                className="w-full px-4 py-3 border border-venice-stone border-opacity-30 rounded-lg focus:outline-none focus:ring-2 focus:ring-venice-red focus:border-transparent text-sm sm:text-base"
               />
             </div>
 
             {/* Tag Filter */}
             <div>
-              <label className="block text-red-200 text-sm font-bold mb-2">
+              <label className="block text-sm font-semibold text-venice-olive-brown mb-2">
                 Filter by Tag
               </label>
               <select
                 value={selectedTag}
                 onChange={(e) => setSelectedTag(e.target.value)}
-                className="w-full px-4 py-3 bg-black/50 border border-red-800/50 rounded-lg text-red-100 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                className="w-full px-4 py-3 border border-venice-stone border-opacity-30 rounded-lg focus:outline-none focus:ring-2 focus:ring-venice-red focus:border-transparent text-sm sm:text-base"
               >
                 <option value="">All Tags</option>
                 {getAllTags().map(tag => (
@@ -161,13 +197,13 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
           </div>
 
           {/* Results Count */}
-          <div className="mt-4 text-red-300 text-sm">
-            Showing {filteredCharacters.length} of {characters.length} characters
+          <div className="mt-4 text-venice-dark-olive text-sm">
+            Showing <span className="font-semibold">{filteredCharacters.length}</span> of <span className="font-semibold">{characters.length}</span> characters
           </div>
         </div>
 
         {/* Character Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
           {filteredCharacters.map((character) => {
             const isSelected = isCharacterSelected(character);
             return (
@@ -175,23 +211,23 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
                 key={character.slug}
                 onClick={() => handleCharacterClick(character)}
                 className={`
-                  bg-black/30 rounded-lg p-6 backdrop-blur-sm border transition-all duration-200 cursor-pointer
+                  bg-venice-white rounded-lg p-4 sm:p-6 shadow-sm border transition-all duration-200 cursor-pointer
                   ${isSelected 
-                    ? 'border-green-500 bg-green-900/20 cursor-not-allowed' 
-                    : 'border-red-800/30 hover:border-red-500 hover:bg-red-900/20'
+                    ? 'border-green-500 bg-green-50 cursor-not-allowed' 
+                    : 'border-venice-stone border-opacity-20 hover:border-venice-red hover:shadow-md'
                   }
                 `}
               >
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-xl font-bold text-red-200">{character.name}</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-venice-olive-brown line-clamp-2">{character.name}</h3>
                   {isSelected && (
-                    <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                    <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full ml-2 flex-shrink-0">
                       Selected
                     </span>
                   )}
                 </div>
                 
-                <p className="text-red-300 text-sm mb-4 line-clamp-3">
+                <p className="text-venice-dark-olive text-sm mb-4 line-clamp-3">
                   {character.description}
                 </p>
 
@@ -199,20 +235,23 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
                   {character.tags.slice(0, 3).map(tag => (
                     <span
                       key={tag}
-                      className="bg-red-800/50 text-red-200 text-xs px-2 py-1 rounded-full"
+                      className="bg-venice-cream text-venice-olive-brown text-xs px-2 py-1 rounded-full border border-venice-stone border-opacity-30"
                     >
                       {tag}
                     </span>
                   ))}
                   {character.tags.length > 3 && (
-                    <span className="text-red-400 text-xs">
+                    <span className="text-venice-dark-olive text-xs">
                       +{character.tags.length - 3} more
                     </span>
                   )}
                 </div>
 
-                <div className="flex justify-between items-center text-xs text-red-400">
-                  <span>{character.stats.imports} imports</span>
+                <div className="flex justify-between items-center text-xs text-venice-dark-olive">
+                  <span className="flex items-center">
+                    <Star className="w-3 h-3 mr-1" />
+                    {character.stats.imports} imports
+                  </span>
                   <span>{character.webEnabled ? '🌐 Web' : '💬 Chat'}</span>
                 </div>
               </div>
@@ -223,9 +262,9 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
         {/* No Results */}
         {filteredCharacters.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-red-400 text-6xl mb-4">🔍</div>
-            <h3 className="text-2xl font-bold text-red-200 mb-2">No Characters Found</h3>
-            <p className="text-red-300 mb-6">
+            <div className="text-venice-stone text-6xl mb-4">🔍</div>
+            <h3 className="text-2xl font-bold text-venice-olive-brown mb-2">No Characters Found</h3>
+            <p className="text-venice-dark-olive mb-6">
               Try adjusting your search terms or filters
             </p>
             <button
@@ -233,22 +272,12 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
                 setSearchTerm('');
                 setSelectedTag('');
               }}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+              className="bg-venice-red hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
             >
               Clear Filters
             </button>
           </div>
         )}
-
-        {/* Back Button */}
-        <div className="text-center">
-          <button
-            onClick={onBack}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg transition-colors"
-          >
-            ← Back to Setup
-          </button>
-        </div>
       </div>
     </div>
   );

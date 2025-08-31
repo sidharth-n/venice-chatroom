@@ -24,6 +24,7 @@ const App: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [characterSelectorTarget, setCharacterSelectorTarget] = useState<1 | 2>(1);
   const [selectedCharacters, setSelectedCharacters] = useState<VeniceCharacter[]>([]);
+  const [cachedCharacters, setCachedCharacters] = useState<VeniceCharacter[] | null>(null);
 
   const character1Name = getCharacterName(character1Url);
   const character2Name = getCharacterName(character2Url);
@@ -216,6 +217,8 @@ const App: React.FC = () => {
         onBack={backFromCharacterSelector}
         selectedCharacters={selectedCharacters}
         title={`Select Character ${characterSelectorTarget}`}
+        cachedCharacters={cachedCharacters}
+        setCachedCharacters={setCachedCharacters}
       />
     );
   }
