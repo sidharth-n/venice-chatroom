@@ -236,9 +236,14 @@ export const fetchVeniceCharacters = async (): Promise<VeniceCharacter[]> => {
     }
 
     const data: VeniceCharactersResponse = await response.json();
-    return data.data || [];
+    // Map webEnabled field correctly from API response
+    const characters = (data.data || []).map(character => ({
+      ...character,
+      webEnabled: character.webEnabled || false
+    }));
+    return characters;
   } catch (error) {
     console.error('Failed to fetch Venice characters:', error);
-    throw new Error('Failed to load character list');
+    throw error;
   }
 };

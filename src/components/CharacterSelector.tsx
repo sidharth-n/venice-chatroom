@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Search, X, Calendar, Hash, Globe, MessageCircle, Star, Users } from 'lucide-react';
+import { ArrowLeft, Search, X, Calendar, Hash, Globe, MessageCircle, Star, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import { VeniceCharacter, fetchVeniceCharacters } from '../services/veniceApi';
+import { loadCharacters, saveCharacters } from '../utils/localStorage';
 
 interface CharacterSelectorProps {
   onCharacterSelect: (character: VeniceCharacter) => void;
@@ -20,66 +21,65 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   setCachedCharacters
 }) => {
   const [characters, setCharacters] = useState<VeniceCharacter[]>([]);
-  const [filteredCharacters, setFilteredCharacters] = useState<VeniceCharacter[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
+  const [selectedCharacterForPopup, setSelectedCharacterForPopup] = useState<VeniceCharacter | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [charactersPerPage] = useState(12);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCharacterForPopup, setSelectedCharacterForPopup] = useState<VeniceCharacter | null>(null);
 
-  const filterCharacters = useCallback(() => {
-    let filtered = characters;
+  const filteredCharacters = characters.filter(character => {
+    const matchesSearch = character.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         character.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesTag = !selectedTag || character.tags.includes(selectedTag);
+    return matchesSearch && matchesTag;
+  });
 
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(char =>
-        char.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        char.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        char.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
+  // Pagination logic
+  const totalPages = Math.ceil(filteredCharacters.length / charactersPerPage);
+  const startIndex = (currentPage - 1) * charactersPerPage;
+  const paginatedCharacters = filteredCharacters.slice(startIndex, startIndex + charactersPerPage);
+
+  // Reset to first page when search/filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedTag]);
+
+  const loadCharactersData = useCallback(async () => {
+    // Try to load from localStorage first
+    const cachedData = loadCharacters();
+    if (cachedData) {
+      setCharacters(cachedData);
+      setCachedCharacters(cachedData);
+      setLoading(false);
+      return;
     }
 
-    // Filter by selected tag
-    if (selectedTag) {
-      filtered = filtered.filter(char =>
-        char.tags.some(tag => tag.toLowerCase() === selectedTag.toLowerCase())
-      );
+    // If no cached data or cached data is from app state, fetch from API
+    if (cachedCharacters) {
+      setCharacters(cachedCharacters);
+      setLoading(false);
+      return;
     }
 
-    setFilteredCharacters(filtered);
-  }, [characters, searchTerm, selectedTag]);
-
-  useEffect(() => {
-    loadCharacters();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    filterCharacters();
-  }, [filterCharacters]);
-
-  const loadCharacters = async () => {
     try {
       setLoading(true);
-      
-      // Use cached characters if available
-      if (cachedCharacters && cachedCharacters.length > 0) {
-        setCharacters(cachedCharacters);
-        setError(null);
-        setLoading(false);
-        return;
-      }
-
-      // Fetch fresh data if no cache
-      const data = await fetchVeniceCharacters();
-      setCharacters(data);
-      setCachedCharacters(data); // Cache the results
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load characters');
+      const fetchedCharacters = await fetchVeniceCharacters();
+      setCharacters(fetchedCharacters);
+      setCachedCharacters(fetchedCharacters);
+      // Save to localStorage
+      saveCharacters(fetchedCharacters);
+    } catch {
+      setError('Failed to load characters. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [cachedCharacters, setCachedCharacters]);
+
+  useEffect(() => {
+    loadCharactersData();
+  }, [loadCharactersData]);
 
   const getAllTags = () => {
     const allTags = characters.flatMap(char => char.tags);
@@ -119,23 +119,24 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   if (error) {
     return (
       <div className="min-h-screen bg-venice-cream flex items-center justify-center p-4">
-        <div className="text-center max-w-md mx-auto">
-          <div className="text-venice-red text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-venice-olive-brown mb-4">Error Loading Characters</h2>
-          <p className="text-venice-dark-olive mb-6">{error}</p>
+        <div className="text-center">
+          <div className="text-center mb-6 sm:mb-8">
+            <Users className="w-10 h-10 sm:w-12 sm:h-12 text-venice-olive-brown mx-auto mb-3 sm:mb-4" />
+            <h3 className="text-3xl sm:text-4xl font-bold text-venice-olive-brown mb-2">{title}</h3>
+          </div>
           <div className="space-y-3">
-            <button
-              onClick={loadCharacters}
-              className="w-full bg-venice-red hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-            >
-              Try Again
-            </button>
-            <button
-              onClick={onBack}
-              className="w-full bg-venice-stone hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-            >
-              Go Back
-            </button>
+              <button
+                onClick={loadCharactersData}
+                className="w-full bg-venice-red hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={onBack}
+                className="w-full bg-venice-stone hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+              >
+                Back to Setup
+              </button>
           </div>
         </div>
       </div>
@@ -214,7 +215,7 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
 
         {/* Character Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
-          {filteredCharacters.map((character) => {
+          {paginatedCharacters.map((character) => {
             const isSelected = isCharacterSelected(character);
             return (
               <div
@@ -251,17 +252,68 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
                   )}
                 </div>
 
-                <div className="flex justify-between items-center text-xs text-venice-dark-olive">
+                <div className="flex justify-center items-center text-xs text-venice-dark-olive">
                   <span className="flex items-center">
                     <Star className="w-3 h-3 mr-1" />
                     {character.stats.imports} imports
                   </span>
-                  <span>{character.webEnabled ? '🌐 Web' : '💬 Chat'}</span>
                 </div>
               </div>
             );
           })}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center space-x-4 mb-8">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="flex items-center space-x-2 px-4 py-2 bg-venice-white border border-venice-stone border-opacity-30 rounded-lg hover:bg-venice-cream transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Previous</span>
+            </button>
+            
+            <div className="flex items-center space-x-2">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`w-10 h-10 rounded-lg font-medium transition-colors ${
+                      currentPage === pageNum
+                        ? 'bg-venice-red text-white'
+                        : 'bg-venice-white border border-venice-stone border-opacity-30 text-venice-olive-brown hover:bg-venice-cream'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+            
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="flex items-center space-x-2 px-4 py-2 bg-venice-white border border-venice-stone border-opacity-30 rounded-lg hover:bg-venice-cream transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span>Next</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* No Results */}
         {filteredCharacters.length === 0 && (

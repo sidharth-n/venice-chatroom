@@ -1,4 +1,5 @@
 import { Message } from '../types';
+import { VeniceCharacter } from '../services/veniceApi';
 
 export interface ConversationState {
   messages: Message[];
@@ -17,61 +18,109 @@ export const generateStorageKey = (character1Name: string, character2Name: strin
 };
 
 // Save conversation to localStorage
-export const saveConversation = (
-  storageKey: string,
-  state: ConversationState
-): void => {
+export const saveConversation = (characterNames: string, conversation: ConversationState) => {
   try {
-    const stateWithTimestamp = {
-      ...state,
+    const key = `venice-conversation-${characterNames}`;
+    const data = {
+      ...conversation,
       timestamp: Date.now()
     };
-    localStorage.setItem(storageKey, JSON.stringify(stateWithTimestamp));
+    localStorage.setItem(key, JSON.stringify(data));
   } catch (error) {
     console.error('Failed to save conversation:', error);
   }
 };
 
-// Load conversation from localStorage
-export const loadConversation = (storageKey: string): ConversationState | null => {
+export const loadConversation = (characterNames: string): ConversationState | null => {
   try {
-    const saved = localStorage.getItem(storageKey);
-    if (!saved) return null;
+    const key = `venice-conversation-${characterNames}`;
+    const data = localStorage.getItem(key);
+    if (!data) return null;
     
-    const state = JSON.parse(saved) as ConversationState;
+    const parsed = JSON.parse(data);
     
-    // Convert timestamp strings back to Date objects for messages
-    if (state.messages) {
-      state.messages = state.messages.map(msg => ({
-        ...msg,
-        timestamp: new Date(msg.timestamp)
-      }));
+    // Check if conversation is older than 30 days
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    if (parsed.timestamp < thirtyDaysAgo) {
+      localStorage.removeItem(key);
+      return null;
     }
     
-    return state;
+    return {
+      messages: parsed.messages || [],
+      currentTurn: parsed.currentTurn || 1,
+      initialPrompt: parsed.initialPrompt || '',
+      character1Url: parsed.character1Url || '',
+      character2Url: parsed.character2Url || '',
+      timestamp: parsed.timestamp
+    };
   } catch (error) {
     console.error('Failed to load conversation:', error);
     return null;
   }
 };
 
-// Clear specific conversation
-export const clearConversation = (storageKey: string): void => {
+export const clearConversation = (characterNames: string) => {
   try {
-    localStorage.removeItem(storageKey);
+    const key = `venice-conversation-${characterNames}`;
+    localStorage.removeItem(key);
   } catch (error) {
     console.error('Failed to clear conversation:', error);
   }
 };
 
-// Get all saved conversations
-export const getAllConversations = (): string[] => {
+export const clearAllConversations = () => {
   try {
     const keys = Object.keys(localStorage);
-    return keys.filter(key => key.startsWith('venice_conversation_'));
+    keys.forEach(key => {
+      if (key.startsWith('venice-conversation-')) {
+        localStorage.removeItem(key);
+      }
+    });
   } catch (error) {
-    console.error('Failed to get conversations:', error);
-    return [];
+    console.error('Failed to clear all conversations:', error);
+  }
+};
+
+// Character caching functions
+export const saveCharacters = (characters: VeniceCharacter[]) => {
+  try {
+    const data = {
+      characters,
+      timestamp: Date.now()
+    };
+    localStorage.setItem('venice-characters', JSON.stringify(data));
+  } catch (error) {
+    console.error('Failed to save characters:', error);
+  }
+};
+
+export const loadCharacters = (): VeniceCharacter[] | null => {
+  try {
+    const data = localStorage.getItem('venice-characters');
+    if (!data) return null;
+    
+    const parsed = JSON.parse(data);
+    
+    // Check if characters are older than 24 hours
+    const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+    if (parsed.timestamp < twentyFourHoursAgo) {
+      localStorage.removeItem('venice-characters');
+      return null;
+    }
+    
+    return parsed.characters || null;
+  } catch (error) {
+    console.error('Failed to load characters:', error);
+    return null;
+  }
+};
+
+export const clearCharacters = () => {
+  try {
+    localStorage.removeItem('venice-characters');
+  } catch (error) {
+    console.error('Failed to clear characters:', error);
   }
 };
 
@@ -79,15 +128,25 @@ export const getAllConversations = (): string[] => {
 export const cleanupOldConversations = (): void => {
   try {
     const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-    const conversationKeys = getAllConversations();
+    const keys = Object.keys(localStorage);
     
-    conversationKeys.forEach(key => {
-      const state = loadConversation(key);
-      if (state && state.timestamp < thirtyDaysAgo) {
-        clearConversation(key);
+    keys.forEach((key: string) => {
+      if (key.startsWith('venice-conversation-')) {
+        const data = localStorage.getItem(key);
+        if (data) {
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.timestamp < thirtyDaysAgo) {
+              localStorage.removeItem(key);
+            }
+          } catch {
+            // Remove corrupted data
+            localStorage.removeItem(key);
+          }
+        }
       }
     });
   } catch (error) {
-    console.error('Failed to cleanup conversations:', error);
+    console.error('Failed to cleanup old conversations:', error);
   }
 };
