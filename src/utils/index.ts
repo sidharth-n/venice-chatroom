@@ -11,6 +11,13 @@ export const getCharacterName = (url: string): string => {
   return 'Character';
 };
 
+// Extract character slug from Venice URLs
+export const getCharacterSlug = (url: string): string => {
+  if (!url) return '';
+  const match = url.match(/\/c\/([^?&#]+)/);
+  return match ? match[1] : '';
+};
+
 // Enhanced dummy responses for more realistic conversation
 export const dummyResponses = [
   "That's a fascinating perspective. I've been contemplating this from a different angle entirely.",

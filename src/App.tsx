@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PageType, Message } from './types';
-import { getCharacterName, dummyResponses } from './utils';
+import { getCharacterName, getCharacterSlug } from './utils';
+import { callVeniceApi, VeniceMessage } from './services/veniceApi';
 import LandingPage from './components/LandingPage';
 import SetupPage from './components/SetupPage';
 import ChatroomPage from './components/ChatroomPage';
@@ -34,24 +35,68 @@ const App: React.FC = () => {
     }
   };
 
-  const generateNextMessage = () => {
+  const generateNextMessage = async () => {
     setIsGenerating(true);
     
-    setTimeout(() => {
-      const randomResponse = dummyResponses[Math.floor(Math.random() * dummyResponses.length)];
+    try {
+      const currentCharacterUrl = currentTurn === 1 ? character1Url : character2Url;
+      const currentCharacterSlug = getCharacterSlug(currentCharacterUrl);
       const currentCharacter = currentTurn === 1 ? character1Name : character2Name;
+      
+      // Build conversation history for API
+      const conversationHistory: VeniceMessage[] = [];
+      
+      // Add initial topic as system message
+      if (messages.length > 0) {
+        conversationHistory.push({
+          role: 'system',
+          content: `You are engaging in a conversation about: "${messages[0].content}". Please respond naturally and stay in character.`
+        });
+      }
+      
+      // Add previous messages as conversation context
+      messages.slice(1).forEach(msg => {
+        if (msg.character !== 'You') {
+          conversationHistory.push({
+            role: msg.character === currentCharacter ? 'assistant' : 'user',
+            content: msg.content
+          });
+        }
+      });
+      
+      // If this is the first message, ask the character to start the discussion
+      if (messages.length === 1) {
+        conversationHistory.push({
+          role: 'user',
+          content: `Please start a thoughtful discussion about this topic. Share your perspective and invite further conversation.`
+        });
+      }
+      
+      const response = await callVeniceApi(conversationHistory, currentCharacterSlug, messages.length);
       
       const newMessage: Message = {
         id: messages.length + 1,
         character: currentCharacter,
-        content: randomResponse,
+        content: response,
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, newMessage]);
       setCurrentTurn(currentTurn === 1 ? 2 : 1);
+    } catch (error) {
+      console.error('Failed to generate message:', error);
+      // Fallback to a generic error message
+      const newMessage: Message = {
+        id: messages.length + 1,
+        character: currentTurn === 1 ? character1Name : character2Name,
+        content: "I'm having trouble responding right now. Please try again.",
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, newMessage]);
+      setCurrentTurn(currentTurn === 1 ? 2 : 1);
+    } finally {
       setIsGenerating(false);
-    }, 1500);
+    }
   };
 
   const resetApp = () => {
