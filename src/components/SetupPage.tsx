@@ -59,7 +59,7 @@ const SetupPage: React.FC<SetupPageProps> = ({
               <label className="block text-base sm:text-lg font-semibold text-venice-olive-brown mb-2">
                 Character 1 URL
               </label>
-              <div className="relative">
+              <div className="space-y-2">
                 <input
                   type="text"
                   value={character1Url}
@@ -67,12 +67,14 @@ const SetupPage: React.FC<SetupPageProps> = ({
                   placeholder="https://venice.ai/c/character-name"
                   className="w-full px-4 py-3 border border-venice-stone border-opacity-30 rounded-lg focus:outline-none focus:ring-2 focus:ring-venice-red focus:border-transparent text-sm sm:text-base"
                 />
-                <button
-                  onClick={() => onSelectCharacter(1)}
-                  className="absolute bottom-1 right-1 text-xs text-venice-red hover:text-red-700 transition-colors underline"
-                >
-                  Browse Characters
-                </button>
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => onSelectCharacter(1)}
+                    className="text-sm text-venice-red hover:text-red-700 transition-colors underline font-medium"
+                  >
+                    Browse Characters
+                  </button>
+                </div>
               </div>
               {character1Url && (
                 <p className="text-base sm:text-lg text-venice-dark-olive mt-1">Character: {character1Name}</p>
@@ -83,7 +85,7 @@ const SetupPage: React.FC<SetupPageProps> = ({
               <label className="block text-base sm:text-lg font-semibold text-venice-olive-brown mb-2">
                 Character 2 URL
               </label>
-              <div className="relative">
+              <div className="space-y-2">
                 <input
                   type="text"
                   value={character2Url}
@@ -91,12 +93,14 @@ const SetupPage: React.FC<SetupPageProps> = ({
                   placeholder="https://venice.ai/c/character-name"
                   className="w-full px-4 py-3 border border-venice-stone border-opacity-30 rounded-lg focus:outline-none focus:ring-2 focus:ring-venice-red focus:border-transparent text-sm sm:text-base"
                 />
-                <button
-                  onClick={() => onSelectCharacter(2)}
-                  className="absolute bottom-1 right-1 text-xs text-venice-red hover:text-red-700 transition-colors underline"
-                >
-                  Browse Characters
-                </button>
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => onSelectCharacter(2)}
+                    className="text-sm text-venice-red hover:text-red-700 transition-colors underline font-medium"
+                  >
+                    Browse Characters
+                  </button>
+                </div>
               </div>
               {character2Url && (
                 <p className="text-base sm:text-lg text-venice-dark-olive mt-1">Character: {character2Name}</p>
