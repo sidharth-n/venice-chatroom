@@ -27,23 +27,23 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
   return (
     <div className="min-h-screen bg-venice-cream flex flex-col">
       {/* Fixed Header */}
-      <div className="bg-venice-white shadow-sm border-b border-venice-stone border-opacity-30 p-4 sticky top-0 z-10">
+      <div className="bg-venice-white shadow-sm border-b border-venice-stone border-opacity-30 p-2 sm:p-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <button
             onClick={onGoBackToSetup}
-            className="flex items-center text-venice-dark-olive hover:text-venice-olive-brown transition-colors"
+            className="flex items-center text-venice-dark-olive hover:text-venice-olive-brown transition-colors p-1"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
-          <div className="text-center">
-            <h2 className="text-2xl font-semibold text-venice-olive-brown">
+          <div className="text-center flex-1 mx-2">
+            <h2 className="text-lg sm:text-2xl font-semibold text-venice-olive-brown leading-tight">
               {character1Name} & {character2Name}
             </h2>
-            <p className="text-base text-venice-dark-olive">AI Conversation</p>
+            <p className="text-xs sm:text-base text-venice-dark-olive">AI Conversation</p>
           </div>
           <button
             onClick={onReset}
-            className="text-lg text-venice-dark-olive hover:text-venice-olive-brown transition-colors"
+            className="text-sm sm:text-lg text-venice-dark-olive hover:text-venice-olive-brown transition-colors p-1"
           >
             Reset
           </button>
