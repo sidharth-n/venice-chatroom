@@ -7,18 +7,9 @@ interface MessageProps {
 }
 
 const Message: React.FC<MessageProps> = ({ message, isLeftSide }) => {
+  // Topic messages are now handled in the header, so this should never render
   if (message.character === 'You') {
-    // Initial prompt styling - centered
-    return (
-      <div className="flex justify-center mb-4 sm:mb-6">
-        <div className="bg-venice-beige text-venice-olive-brown px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl border border-venice-stone border-opacity-40 max-w-[95%] sm:max-w-[90%]">
-          <div className="flex items-center justify-center mb-1">
-            <span className="text-base font-semibold text-venice-olive-brown">Topic</span>
-          </div>
-          <p className="text-base sm:text-lg leading-relaxed text-center italic">"{message.content}"</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   // Character messages - alternating sides

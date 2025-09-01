@@ -1,5 +1,5 @@
-import React from 'react';
-import { ArrowLeft } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 import { Message } from '../types';
 import MessageList from './MessageList';
 
@@ -24,43 +24,81 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
   onGoBackToSetup,
   onReset
 }) => {
+  const [isTopicExpanded, setIsTopicExpanded] = useState(false);
+  const topic = messages.length > 0 ? messages[0].content : '';
+
   return (
-    <div className="min-h-screen bg-venice-cream flex flex-col relative">
+    <div className="min-h-screen bg-venice-cream flex flex-col">
       {/* Fixed Header */}
-      <div className="bg-venice-white shadow-sm border-b border-venice-stone border-opacity-30 p-2 sm:p-4 sticky top-0 z-10">
-        <div className="flex items-center justify-between">
-          <button
-            onClick={onGoBackToSetup}
-            className="flex items-center text-venice-dark-olive hover:text-venice-olive-brown transition-colors p-1"
-          >
-            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
-          <div className="text-center flex-1 mx-2">
-            <h2 className="text-lg sm:text-2xl font-semibold text-venice-olive-brown leading-tight">
-              {character1Name} & {character2Name}
-            </h2>
-            <p className="text-xs sm:text-base text-venice-dark-olive">AI Conversation</p>
+      <div className="bg-venice-white shadow-sm border-b border-venice-stone border-opacity-30 sticky top-0 z-10">
+        <div className="p-2 sm:p-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={onGoBackToSetup}
+              className="flex items-center text-venice-dark-olive hover:text-venice-olive-brown transition-colors p-1"
+            >
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+            <div className="text-center flex-1 mx-2">
+              <h2 className="text-lg sm:text-2xl font-semibold text-venice-olive-brown leading-tight">
+                {character1Name} & {character2Name}
+              </h2>
+              <p className="text-xs sm:text-base text-venice-dark-olive">AI Conversation</p>
+            </div>
+            <button
+              onClick={onReset}
+              className="text-sm sm:text-lg text-venice-dark-olive hover:text-venice-olive-brown transition-colors p-1"
+            >
+              Reset
+            </button>
           </div>
-          <button
-            onClick={onReset}
-            className="text-sm sm:text-lg text-venice-dark-olive hover:text-venice-olive-brown transition-colors p-1"
-          >
-            Reset
-          </button>
         </div>
+        
+        {/* Collapsible Topic Section */}
+        {topic && (
+          <>
+            <div className="border-t border-venice-stone border-opacity-20">
+              <div className="flex justify-center">
+                <button
+                  onClick={() => setIsTopicExpanded(!isTopicExpanded)}
+                  className="px-4 sm:px-6 py-2 flex items-center space-x-2 text-venice-olive-brown hover:bg-venice-cream transition-colors rounded-b-lg"
+                >
+                  <span className="text-sm sm:text-base font-medium">Topic</span>
+                  {isTopicExpanded ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+            
+            {isTopicExpanded && (
+              <div className="px-2 sm:px-4 pb-3 border-t border-venice-stone border-opacity-10">
+                <div className="max-w-2xl mx-auto">
+                  <div className="bg-venice-cream rounded-lg px-3 py-2 sm:px-4 sm:py-3 mt-2">
+                    <p className="text-sm sm:text-base text-venice-dark-olive italic text-center">"{topic}"</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Chat Messages - Scrollable Area */}
-      <MessageList
-        messages={messages}
-        isGenerating={isGenerating}
-        currentTurn={currentTurn}
-        character1Name={character1Name}
-        character2Name={character2Name}
-      />
+      <div className="flex-1">
+        <MessageList
+          messages={messages}
+          isGenerating={isGenerating}
+          currentTurn={currentTurn}
+          character1Name={character1Name}
+          character2Name={character2Name}
+        />
+      </div>
 
       {/* Fixed Bottom Bar - Enhanced for mobile visibility */}
-      <div className="bg-venice-white border-t border-venice-stone border-opacity-30 p-3 sm:p-4 sticky bottom-0 z-20 shadow-lg">
+      <div className="bg-venice-white border-t border-venice-stone border-opacity-30 p-3 sm:p-4 mt-auto z-20 shadow-lg">
         <div className="max-w-2xl mx-auto">
           <button
             onClick={onGenerateNextMessage}

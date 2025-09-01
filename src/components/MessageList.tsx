@@ -28,10 +28,19 @@ const MessageList: React.FC<MessageListProps> = ({
     }
   }, [messages]);
 
-  // Don't auto-scroll on initial load - let user see the topic
+  // Ensure topic is visible on initial load
+  useEffect(() => {
+    if (messages.length === 1) {
+      // Scroll to top to show topic when conversation first starts
+      const container = messagesEndRef.current?.parentElement?.parentElement;
+      if (container) {
+        container.scrollTop = 0;
+      }
+    }
+  }, [messages.length]);
 
   return (
-    <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 sm:py-6 pb-20 sm:pb-24">
+    <div className="px-3 sm:px-4 py-4 sm:py-6 pb-24 sm:pb-28">
       <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
         {messages.map((message) => {
           // Calculate alternating sides for character messages only
