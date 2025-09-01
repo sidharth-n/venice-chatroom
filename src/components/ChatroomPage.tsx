@@ -60,12 +60,12 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
       />
 
       {/* Fixed Bottom Bar */}
-      <div className="bg-venice-white border-t border-venice-stone border-opacity-30 p-3 sm:p-4 sticky bottom-0 z-10">
+      <div className="bg-venice-white border-t border-venice-stone border-opacity-30 p-2 sm:p-3 sticky bottom-0 z-10">
         <div className="max-w-2xl mx-auto">
           <button
             onClick={onGenerateNextMessage}
             disabled={isGenerating}
-            className="w-full bg-venice-bright-red text-venice-white py-4 sm:py-5 px-4 sm:px-6 rounded-xl font-semibold text-xl sm:text-2xl shadow-lg hover:bg-venice-muted-red active:bg-venice-dark transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-venice-bright-red text-venice-white py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium text-base sm:text-lg shadow-md hover:bg-venice-muted-red active:bg-venice-dark transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isGenerating ? (
               <>

@@ -35,7 +35,7 @@ const MessageList: React.FC<MessageListProps> = ({
   }, []);
 
   return (
-    <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 sm:py-6 pb-20 sm:pb-24">
+    <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 sm:py-4 pb-16 sm:pb-20">
       <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
         {messages.map((message) => {
           // Calculate alternating sides for character messages only

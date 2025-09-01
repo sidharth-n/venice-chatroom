@@ -114,9 +114,9 @@ const SetupPage: React.FC<SetupPageProps> = ({
             <button
               onClick={onStartChatroom}
               disabled={!character1Url.trim() || !character2Url.trim() || !initialPrompt.trim()}
-              className="w-full bg-venice-bright-red text-venice-white py-4 sm:py-5 px-4 sm:px-6 rounded-xl font-semibold text-xl sm:text-2xl shadow-lg hover:bg-venice-muted-red active:bg-venice-dark transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              className="w-full bg-venice-bright-red text-venice-white py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium text-base sm:text-lg shadow-md hover:bg-venice-muted-red active:bg-venice-dark transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
-              <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Send className="w-4 h-4" />
               <span>Start Conversation</span>
             </button>
           </div>

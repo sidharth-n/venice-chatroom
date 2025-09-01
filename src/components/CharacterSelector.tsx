@@ -95,9 +95,7 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   };
 
   const handleSelectFromPopup = (character: VeniceCharacter) => {
-    if (!isCharacterSelected(character)) {
-      onCharacterSelect(character);
-    }
+    onCharacterSelect(character);
     setSelectedCharacterForPopup(null);
   };
 
@@ -216,7 +214,6 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
         {/* Character Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
           {paginatedCharacters.map((character) => {
-            const isSelected = isCharacterSelected(character);
             return (
               <div
                 key={character.slug}
@@ -225,11 +222,6 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
               >
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="text-lg sm:text-xl font-bold text-venice-olive-brown line-clamp-2">{character.name}</h3>
-                  {isSelected && (
-                    <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full ml-2 flex-shrink-0">
-                      Selected
-                    </span>
-                  )}
                 </div>
                 
                 <p className="text-venice-dark-olive text-sm mb-4 line-clamp-3">
@@ -485,14 +477,9 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
               <div className="p-3 sm:p-6 border-t border-venice-stone border-opacity-20">
                 <button
                   onClick={() => handleSelectFromPopup(selectedCharacterForPopup)}
-                  disabled={isCharacterSelected(selectedCharacterForPopup)}
-                  className={`w-full px-4 py-2 sm:py-3 rounded-lg font-medium transition-colors text-sm sm:text-base ${
-                    isCharacterSelected(selectedCharacterForPopup)
-                      ? 'bg-green-500 text-white cursor-not-allowed'
-                      : 'bg-venice-red text-white hover:bg-red-700'
-                  }`}
+                  className="w-full px-3 py-2 rounded-lg font-medium transition-colors text-sm bg-venice-red text-white hover:bg-red-700"
                 >
-                  {isCharacterSelected(selectedCharacterForPopup) ? 'Already Selected' : 'Select Character'}
+                  Select Character
                 </button>
               </div>
             </div>
