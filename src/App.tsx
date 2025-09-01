@@ -79,6 +79,10 @@ const App: React.FC = () => {
       }]);
       setCurrentPage('chatroom');
       setIsGenerating(false);
+      // Reset scroll position when entering chatroom
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 0);
     }
   };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Search, X, Calendar, Hash, Globe, MessageCircle, Star, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Search, X, Star, Globe, MessageCircle, Hash, ChevronLeft, ChevronRight, Users } from 'lucide-react';
 import { VeniceCharacter, fetchVeniceCharacters } from '../services/veniceApi';
 import { loadCharacters, saveCharacters } from '../utils/localStorage';
 
@@ -92,15 +92,21 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
 
   const handleCharacterClick = (character: VeniceCharacter) => {
     setSelectedCharacterForPopup(character);
+    // Prevent background scroll when popup opens
+    document.body.style.overflow = 'hidden';
   };
 
   const handleSelectFromPopup = (character: VeniceCharacter) => {
     onCharacterSelect(character);
     setSelectedCharacterForPopup(null);
+    // Restore background scroll when popup closes
+    document.body.style.overflow = 'unset';
   };
 
   const closePopup = () => {
     setSelectedCharacterForPopup(null);
+    // Restore background scroll when popup closes
+    document.body.style.overflow = 'unset';
   };
 
   if (loading) {
@@ -387,8 +393,8 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
 
         {/* Character Detail Popup */}
         {selectedCharacterForPopup && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
-            <div className="bg-venice-white rounded-t-lg sm:rounded-lg w-full sm:max-w-md sm:w-full max-h-[95vh] sm:max-h-[90vh] flex flex-col">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-hidden">
+            <div className="bg-venice-white rounded-lg w-full max-w-md max-h-[80vh] flex flex-col">
               {/* Popup Header */}
               <div className="flex items-center justify-between p-3 sm:p-6 border-b border-venice-stone border-opacity-20">
                 <h3 className="text-lg sm:text-xl font-bold text-venice-olive-brown">Character Details</h3>
@@ -401,17 +407,17 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
               </div>
 
               {/* Popup Content */}
-              <div className="p-3 sm:p-6 flex-1 overflow-y-auto">
-                <div className="space-y-4 sm:space-y-6 pb-4">
+              <div className="p-4 flex-1 overflow-y-auto">
+                <div className="space-y-3">
                   {/* Character Name */}
                   <div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-venice-olive-brown mb-2 leading-tight">
+                    <h3 className="text-lg font-bold text-venice-olive-brown mb-1 leading-tight">
                       {selectedCharacterForPopup.name}
                     </h3>
                   </div>
 
                   {/* Character Stats */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-1 gap-2">
                     <div className="flex items-center space-x-2 text-sm text-venice-dark-olive">
                       <Star className="w-4 h-4 flex-shrink-0" />
                       <span>{selectedCharacterForPopup.stats.imports} imports</span>
@@ -429,55 +435,48 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
                         </>
                       )}
                     </div>
-                    <div className="flex items-center space-x-2 text-sm text-venice-dark-olive">
-                      <Calendar className="w-4 h-4 flex-shrink-0" />
-                      <span className="text-xs sm:text-sm">{new Date(selectedCharacterForPopup.createdAt).toLocaleDateString()}</span>
-                    </div>
                   </div>
 
                   {/* Description */}
                   <div>
-                    <h4 className="text-base sm:text-lg font-semibold text-venice-olive-brown mb-2 sm:mb-3">Description</h4>
-                    <p className="text-venice-dark-olive leading-relaxed text-sm sm:text-base">
-                      {selectedCharacterForPopup.description}
-                    </p>
+                    <h4 className="text-sm font-semibold text-venice-olive-brown mb-1">Description</h4>
+                    <div className="max-h-32 overflow-y-auto">
+                      <p className="text-venice-dark-olive leading-relaxed text-sm">
+                        {selectedCharacterForPopup.description}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Tags */}
                   <div>
-                    <h4 className="text-base sm:text-lg font-semibold text-venice-olive-brown mb-2 sm:mb-3 flex items-center">
+                    <h4 className="text-sm font-semibold text-venice-olive-brown mb-1 flex items-center">
                       <Hash className="w-4 h-4 mr-1 flex-shrink-0" />
                       Tags
                     </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedCharacterForPopup.tags.map(tag => (
+                    <div className="flex flex-wrap gap-1">
+                      {selectedCharacterForPopup.tags.slice(0, 6).map(tag => (
                         <span
                           key={tag}
-                          className="bg-venice-cream text-venice-olive-brown text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full border border-venice-stone border-opacity-30"
+                          className="bg-venice-cream text-venice-olive-brown text-xs px-2 py-1 rounded-full border border-venice-stone border-opacity-30"
                         >
                           {tag}
                         </span>
                       ))}
-                    </div>
-                  </div>
-
-                  {/* Character URL */}
-                  <div>
-                    <h4 className="text-base sm:text-lg font-semibold text-venice-olive-brown mb-2 sm:mb-3">Character URL</h4>
-                    <div className="bg-venice-cream p-2 sm:p-3 rounded-lg border border-venice-stone border-opacity-20">
-                      <code className="text-xs sm:text-sm text-venice-dark-olive break-all block">
-                        {selectedCharacterForPopup.shareUrl}
-                      </code>
+                      {selectedCharacterForPopup.tags.length > 6 && (
+                        <span className="text-xs text-venice-dark-olive">
+                          +{selectedCharacterForPopup.tags.length - 6} more
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Popup Footer */}
-              <div className="p-3 sm:p-6 border-t border-venice-stone border-opacity-20 flex-shrink-0">
+              <div className="p-4 border-t border-venice-stone border-opacity-20 flex-shrink-0">
                 <button
                   onClick={() => handleSelectFromPopup(selectedCharacterForPopup)}
-                  className="w-full px-3 py-2.5 rounded-lg font-medium transition-colors text-sm bg-venice-red text-white hover:bg-red-700"
+                  className="w-full px-4 py-2.5 rounded-lg font-medium transition-colors text-sm bg-venice-red text-white hover:bg-red-700"
                 >
                   Select Character
                 </button>
