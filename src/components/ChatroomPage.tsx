@@ -50,18 +50,6 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
         </div>
       </div>
 
-      {/* Topic Display - Always visible */}
-      {messages.length > 0 && (
-        <div className="bg-venice-white border-b border-venice-stone border-opacity-30 p-3 sm:p-4">
-          <div className="max-w-2xl mx-auto text-center">
-            <h3 className="text-sm sm:text-base font-semibold text-venice-olive-brown mb-1">Topic</h3>
-            <div className="bg-venice-cream rounded-lg px-3 py-2 sm:px-4 sm:py-3">
-              <p className="text-sm sm:text-base text-venice-dark-olive italic">"{messages[0].content}"</p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Chat Messages - Scrollable Area */}
       <MessageList
         messages={messages}

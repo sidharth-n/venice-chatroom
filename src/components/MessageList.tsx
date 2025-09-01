@@ -20,22 +20,18 @@ const MessageList: React.FC<MessageListProps> = ({
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom when messages change (but not on initial load)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Only auto-scroll if there are more than 1 message (i.e., conversation has started)
+    if (messages.length > 1) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
-  // Ensure proper scroll position on initial load
-  useEffect(() => {
-    if (messages.length > 0) {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
-      }, 100);
-    }
-  }, []);
+  // Don't auto-scroll on initial load - let user see the topic
 
   return (
-    <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 sm:py-4 pb-16 sm:pb-20">
+    <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 sm:py-6 pb-20 sm:pb-24">
       <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
         {messages.map((message) => {
           // Calculate alternating sides for character messages only
