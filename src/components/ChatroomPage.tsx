@@ -25,7 +25,7 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
   onReset
 }) => {
   return (
-    <div className="min-h-screen bg-venice-cream flex flex-col">
+    <div className="min-h-screen bg-venice-cream flex flex-col relative">
       {/* Fixed Header */}
       <div className="bg-venice-white shadow-sm border-b border-venice-stone border-opacity-30 p-2 sm:p-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
@@ -50,6 +50,18 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
         </div>
       </div>
 
+      {/* Topic Display - Always visible */}
+      {messages.length > 0 && (
+        <div className="bg-venice-white border-b border-venice-stone border-opacity-30 p-3 sm:p-4">
+          <div className="max-w-2xl mx-auto text-center">
+            <h3 className="text-sm sm:text-base font-semibold text-venice-olive-brown mb-1">Topic</h3>
+            <div className="bg-venice-cream rounded-lg px-3 py-2 sm:px-4 sm:py-3">
+              <p className="text-sm sm:text-base text-venice-dark-olive italic">"{messages[0].content}"</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Chat Messages - Scrollable Area */}
       <MessageList
         messages={messages}
@@ -59,21 +71,21 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
         character2Name={character2Name}
       />
 
-      {/* Fixed Bottom Bar */}
-      <div className="bg-venice-white border-t border-venice-stone border-opacity-30 p-2 sm:p-3 sticky bottom-0 z-10">
+      {/* Fixed Bottom Bar - Enhanced for mobile visibility */}
+      <div className="bg-venice-white border-t border-venice-stone border-opacity-30 p-3 sm:p-4 sticky bottom-0 z-20 shadow-lg">
         <div className="max-w-2xl mx-auto">
           <button
             onClick={onGenerateNextMessage}
             disabled={isGenerating}
-            className="w-full bg-venice-bright-red text-venice-white py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium text-base sm:text-lg shadow-md hover:bg-venice-muted-red active:bg-venice-dark transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-venice-bright-red text-venice-white py-3 sm:py-3.5 px-4 sm:px-5 rounded-lg font-medium text-base sm:text-lg shadow-lg hover:bg-venice-muted-red active:bg-venice-dark transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] sm:min-h-[52px]"
           >
             {isGenerating ? (
               <>
-                <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-venice-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Generating...</span>
+                <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-venice-white border-t-transparent rounded-full animate-spin"></div>
+                <span className="font-semibold">Generating...</span>
               </>
             ) : (
-              <span>{messages.length === 1 ? 'Start Conversation' : 'Next Message'}</span>
+              <span className="font-semibold">{messages.length === 1 ? 'Start Conversation' : 'Next Message'}</span>
             )}
           </button>
         </div>

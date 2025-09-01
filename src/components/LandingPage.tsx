@@ -38,7 +38,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStartSetup }) => {
           <div className="pt-6 sm:pt-8">
             <button
               onClick={onStartSetup}
-              className="w-full bg-venice-bright-red text-venice-white py-4 sm:py-5 px-6 sm:px-8 rounded-2xl font-medium text-xl sm:text-2xl shadow-lg hover:bg-venice-muted-red active:bg-venice-dark transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-venice-bright-red text-venice-white py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium text-base sm:text-lg shadow-md hover:bg-venice-muted-red active:bg-venice-dark transition-all duration-200"
             >
               Start Chatroom
             </button>
