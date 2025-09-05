@@ -100,12 +100,12 @@ const SetupPage: React.FC<SetupPageProps> = ({
 
             <div>
               <label className="block text-base sm:text-lg font-semibold text-venice-olive-brown mb-2">
-                Conversation Topic
+                First Message
               </label>
               <textarea
                 value={initialPrompt}
                 onChange={(e) => setInitialPrompt(e.target.value)}
-                placeholder="Describe the scenario or conversation starter..."
+                placeholder="Enter the opening message to start the conversation..."
                 rows={4}
                 className="w-full px-4 py-3 border border-venice-stone border-opacity-30 rounded-lg focus:outline-none focus:ring-2 focus:ring-venice-red focus:border-transparent resize-none"
               />

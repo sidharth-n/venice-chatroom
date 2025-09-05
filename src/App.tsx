@@ -73,7 +73,7 @@ const App: React.FC = () => {
     if (character1Url.trim() && character2Url.trim() && initialPrompt.trim()) {
       setMessages([{
         id: 1,
-        character: 'You',
+        character: 'User',
         content: initialPrompt,
         timestamp: new Date()
       }]);
@@ -97,29 +97,35 @@ const App: React.FC = () => {
       // Build conversation history for API
       const conversationHistory: VeniceMessage[] = [];
       
-      // Add initial topic as system message
+      // Add initial message as context
       if (messages.length > 0) {
         conversationHistory.push({
           role: 'system',
-          content: `You are engaging in a conversation about: "${messages[0].content}". Please respond naturally and stay in character.`
+          content: `You are engaging in a conversation that started with: "${messages[0].content}". Please respond naturally and stay in character.`
         });
       }
       
-      // Add previous messages as conversation context
+      // Add previous messages as conversation context (excluding the first message which is now treated as context)
       messages.slice(1).forEach(msg => {
         if (msg.character !== 'You') {
           conversationHistory.push({
             role: msg.character === currentCharacter ? 'assistant' : 'user',
             content: msg.content
           });
+        } else {
+          // User messages
+          conversationHistory.push({
+            role: 'user',
+            content: msg.content
+          });
         }
       });
       
-      // If this is the first message, ask the character to start the discussion
+      // If this is the first AI response, respond to the opening message
       if (messages.length === 1) {
         conversationHistory.push({
           role: 'user',
-          content: `Please start a thoughtful discussion about this topic. Share your perspective and invite further conversation.`
+          content: `Please respond to this message and continue the conversation naturally.`
         });
       }
       
@@ -148,6 +154,16 @@ const App: React.FC = () => {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleUserMessage = (content: string) => {
+    const newMessage: Message = {
+      id: messages.length + 1,
+      character: 'User',
+      content: content,
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, newMessage]);
   };
 
   const resetApp = () => {
@@ -237,6 +253,7 @@ const App: React.FC = () => {
       onGenerateNextMessage={generateNextMessage}
       onGoBackToSetup={goBackToSetup}
       onReset={resetApp}
+      onUserMessage={handleUserMessage}
     />
   );
 };

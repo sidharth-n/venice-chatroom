@@ -43,10 +43,10 @@ const MessageList: React.FC<MessageListProps> = ({
     <div className="px-3 sm:px-4 py-4 sm:py-6 pb-20 sm:pb-24">
       <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
         {messages.map((message) => {
-          // Calculate alternating sides for character messages only
-          const characterMessages = messages.filter(m => m.character !== 'You');
-          const characterIndex = characterMessages.findIndex(m => m.id === message.id);
-          const isLeftSide = characterIndex % 2 === 0;
+          // Calculate alternating sides for AI character messages only
+          const aiMessages = messages.filter(m => m.character !== 'User' && m.character !== 'You');
+          const aiIndex = aiMessages.findIndex(m => m.id === message.id);
+          const isLeftSide = aiIndex % 2 === 0;
           
           return (
             <Message
@@ -61,7 +61,7 @@ const MessageList: React.FC<MessageListProps> = ({
         {isGenerating && (
           <ThinkingIndicator
             characterName={currentTurn === 1 ? character1Name : character2Name}
-            isLeftSide={messages.filter(m => m.character !== 'You').length % 2 === 0}
+            isLeftSide={messages.filter(m => m.character !== 'User' && m.character !== 'You').length % 2 === 0}
           />
         )}
         
