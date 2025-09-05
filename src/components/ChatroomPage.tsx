@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Menu, X, Users, MessageSquare } from 'lucide-react';
-import { Message } from '../types';
+import { ArrowLeft, Menu, X, Users, MessageSquare, Send, ChevronRight } from 'lucide-react';
 import MessageList from './MessageList';
+import { Message } from '../types';
 
 interface ChatroomPageProps {
   character1Name: string;
@@ -170,31 +170,26 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
             />
             
             {/* Send Button */}
-            {userInput.trim() ? (
-              <button
-                onClick={handleUserSubmit}
-                className="bg-venice-bright-red text-venice-white p-3 rounded-full hover:bg-venice-muted-red active:bg-venice-dark transition-all duration-200 flex items-center justify-center min-w-[48px] min-h-[48px]"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                </svg>
-              </button>
-            ) : (
-              /* Next Button when no text */
-              <button
-                onClick={onGenerateNextMessage}
-                disabled={isGenerating}
-                className="bg-venice-olive-brown text-venice-white p-3 rounded-full hover:bg-venice-dark-olive active:bg-venice-dark transition-all duration-200 flex items-center justify-center min-w-[48px] min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isGenerating ? (
-                  <div className="w-5 h-5 border-2 border-venice-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                )}
-              </button>
-            )}
+            <button
+              onClick={handleUserSubmit}
+              disabled={!userInput.trim()}
+              className="bg-venice-bright-red text-venice-white p-3 rounded-full hover:bg-venice-muted-red active:bg-venice-dark transition-all duration-200 flex items-center justify-center min-w-[48px] min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+            
+            {/* Next Button */}
+            <button
+              onClick={onGenerateNextMessage}
+              disabled={isGenerating}
+              className="bg-venice-olive-brown text-venice-white p-3 rounded-full hover:bg-venice-dark-olive active:bg-venice-dark transition-all duration-200 flex items-center justify-center min-w-[48px] min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isGenerating ? (
+                <div className="w-5 h-5 border-2 border-venice-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <ChevronRight className="w-5 h-5" />
+              )}
+            </button>
           </div>
         </div>
       </div>

@@ -16,7 +16,7 @@ const Message: React.FC<MessageProps> = ({ message, isLeftSide }) => {
             <div className="flex items-center space-x-2 mb-1">
               <span className="text-base font-semibold text-venice-white">You</span>
               <span className="text-base text-venice-white opacity-80">
-                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
             <p className="text-base sm:text-lg leading-relaxed">{message.content}</p>
