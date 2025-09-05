@@ -28,7 +28,7 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
   const topic = messages.length > 0 ? messages[0].content : '';
 
   return (
-    <div className="min-h-screen bg-venice-cream flex flex-col">
+    <div className="min-h-screen bg-venice-cream relative">
       {/* Fixed Header */}
       <div className="bg-venice-white shadow-sm border-b border-venice-stone border-opacity-30 sticky top-0 z-10">
         <div className="p-2 sm:p-4">
@@ -87,18 +87,26 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
       </div>
 
       {/* Chat Messages - Scrollable Area */}
-      <div className="flex-1">
-        <MessageList
-          messages={messages}
-          isGenerating={isGenerating}
-          currentTurn={currentTurn}
-          character1Name={character1Name}
-          character2Name={character2Name}
-        />
-      </div>
+      <MessageList
+        messages={messages}
+        isGenerating={isGenerating}
+        currentTurn={currentTurn}
+        character1Name={character1Name}
+        character2Name={character2Name}
+      />
 
       {/* Fixed Bottom Bar - Enhanced for mobile visibility */}
-      <div className="bg-venice-white border-t border-venice-stone border-opacity-30 p-3 sm:p-4 mt-auto z-20 shadow-lg">
+      <div 
+        className="bg-venice-white border-t border-venice-stone border-opacity-30 p-3 sm:p-4 z-50 shadow-lg" 
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          width: '100%',
+          zIndex: 50
+        }}
+      >
         <div className="max-w-2xl mx-auto">
           <button
             onClick={onGenerateNextMessage}
