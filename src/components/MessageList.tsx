@@ -20,13 +20,13 @@ const MessageList: React.FC<MessageListProps> = ({
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when messages change (but not on initial load)
+  // Auto-scroll to bottom when messages change or when generating
   useEffect(() => {
-    // Only auto-scroll if there are more than 1 message (i.e., conversation has started)
-    if (messages.length > 1) {
+    // Auto-scroll if there are messages or if generating (for thinking indicator)
+    if (messages.length > 1 || isGenerating) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages]);
+  }, [messages, isGenerating]);
 
   // Ensure topic is visible on initial load
   useEffect(() => {
