@@ -83,6 +83,10 @@ const App: React.FC = () => {
       setTimeout(() => {
         window.scrollTo(0, 0);
       }, 0);
+      // Auto-start conversation after initial message
+      setTimeout(() => {
+        generateNextMessage();
+      }, 1000);
     }
   };
 

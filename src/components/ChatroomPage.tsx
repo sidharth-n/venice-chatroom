@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Menu, X, Users, MessageSquare, Send, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Menu, X, Users, MessageSquare, Send, Play } from 'lucide-react';
 import MessageList from './MessageList';
 import { Message } from '../types';
 
@@ -34,6 +34,10 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
     if (userInput.trim() && onUserMessage) {
       onUserMessage(userInput.trim());
       setUserInput('');
+      // Auto-trigger AI response after user message
+      setTimeout(() => {
+        onGenerateNextMessage();
+      }, 500);
     }
   };
 
@@ -74,68 +78,70 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
       </div>
 
       {/* Left Drawer */}
-      {isDrawerOpen && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-            onClick={() => setIsDrawerOpen(false)}
-          />
+      <>
+        {/* Backdrop */}
+        <div 
+          className={`fixed inset-0 bg-black transition-opacity duration-300 z-40 ${
+            isDrawerOpen ? 'opacity-50' : 'opacity-0 pointer-events-none'
+          }`}
+          onClick={() => setIsDrawerOpen(false)}
+        />
+        
+        {/* Drawer */}
+        <div className={`fixed left-0 top-0 h-full w-80 bg-venice-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
+          isDrawerOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}>
+          <div className="p-4 border-b border-venice-stone border-opacity-30">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-venice-olive-brown">Conversation Details</h3>
+              <button
+                onClick={() => setIsDrawerOpen(false)}
+                className="text-venice-dark-olive hover:text-venice-olive-brown transition-colors p-1 rounded-full hover:bg-venice-cream"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
           
-          {/* Drawer */}
-          <div className="fixed left-0 top-0 h-full w-80 bg-venice-white shadow-xl z-50 transform transition-transform duration-300">
-            <div className="p-4 border-b border-venice-stone border-opacity-30">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-venice-olive-brown">Conversation Details</h3>
-                <button
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="text-venice-dark-olive hover:text-venice-olive-brown transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+          <div className="p-4 space-y-6 overflow-y-auto h-full pb-20">
+            {/* Participants */}
+            <div>
+              <div className="flex items-center space-x-2 mb-3">
+                <Users className="w-4 h-4 text-venice-olive-brown" />
+                <h4 className="text-base font-medium text-venice-olive-brown">Participants</h4>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-3 p-3 bg-venice-cream rounded-lg hover:bg-venice-beige transition-colors">
+                  <div className="w-10 h-10 bg-venice-bright-red rounded-full flex items-center justify-center shadow-sm">
+                    <span className="text-white text-sm font-medium">{character1Name.charAt(0)}</span>
+                  </div>
+                  <span className="text-sm font-medium text-venice-dark-olive">{character1Name}</span>
+                </div>
+                <div className="flex items-center space-x-3 p-3 bg-venice-cream rounded-lg hover:bg-venice-beige transition-colors">
+                  <div className="w-10 h-10 bg-venice-olive-brown rounded-full flex items-center justify-center shadow-sm">
+                    <span className="text-white text-sm font-medium">{character2Name.charAt(0)}</span>
+                  </div>
+                  <span className="text-sm font-medium text-venice-dark-olive">{character2Name}</span>
+                </div>
               </div>
             </div>
             
-            <div className="p-4 space-y-6">
-              {/* Participants */}
+            {/* First Message */}
+            {firstMessage && (
               <div>
                 <div className="flex items-center space-x-2 mb-3">
-                  <Users className="w-4 h-4 text-venice-olive-brown" />
-                  <h4 className="text-base font-medium text-venice-olive-brown">Participants</h4>
+                  <MessageSquare className="w-4 h-4 text-venice-olive-brown" />
+                  <h4 className="text-base font-medium text-venice-olive-brown">First Message</h4>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-3 p-2 bg-venice-cream rounded-lg">
-                    <div className="w-8 h-8 bg-venice-bright-red rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm font-medium">{character1Name.charAt(0)}</span>
-                    </div>
-                    <span className="text-sm text-venice-dark-olive">{character1Name}</span>
-                  </div>
-                  <div className="flex items-center space-x-3 p-2 bg-venice-cream rounded-lg">
-                    <div className="w-8 h-8 bg-venice-olive-brown rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm font-medium">{character2Name.charAt(0)}</span>
-                    </div>
-                    <span className="text-sm text-venice-dark-olive">{character2Name}</span>
-                  </div>
+                <div className="bg-venice-beige p-4 rounded-lg border border-venice-stone border-opacity-30 shadow-sm">
+                  <p className="text-sm text-venice-dark-olive italic leading-relaxed">"{firstMessage}"</p>
                 </div>
               </div>
-              
-              {/* First Message */}
-              {firstMessage && (
-                <div>
-                  <div className="flex items-center space-x-2 mb-3">
-                    <MessageSquare className="w-4 h-4 text-venice-olive-brown" />
-                    <h4 className="text-base font-medium text-venice-olive-brown">First Message</h4>
-                  </div>
-                  <div className="bg-venice-beige p-3 rounded-lg border border-venice-stone border-opacity-30">
-                    <p className="text-sm text-venice-dark-olive italic">"{firstMessage}"</p>
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
           </div>
-        </>
-      )}
-      
+        </div>
+      </>
+
       {/* Chat Messages - Scrollable Area */}
       <MessageList
         messages={messages}
@@ -178,18 +184,21 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
               <Send className="w-5 h-5" />
             </button>
             
-            {/* Next Button */}
-            <button
-              onClick={onGenerateNextMessage}
-              disabled={isGenerating}
-              className="bg-venice-olive-brown text-venice-white p-3 rounded-full hover:bg-venice-dark-olive active:bg-venice-dark transition-all duration-200 flex items-center justify-center min-w-[48px] min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isGenerating ? (
-                <div className="w-5 h-5 border-2 border-venice-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <ChevronRight className="w-5 h-5" />
-              )}
-            </button>
+            {/* Next Button - Only show after AI messages */}
+            {messages.length > 1 && messages[messages.length - 1].character !== 'User' && (
+              <button
+                onClick={onGenerateNextMessage}
+                disabled={isGenerating}
+                className="bg-gradient-to-r from-venice-olive-brown to-venice-dark-olive text-venice-white p-3 rounded-full hover:from-venice-dark-olive hover:to-venice-olive-brown active:scale-95 transition-all duration-200 flex items-center justify-center min-w-[48px] min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                title="Continue conversation"
+              >
+                {isGenerating ? (
+                  <div className="w-5 h-5 border-2 border-venice-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <Play className="w-5 h-5" />
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
