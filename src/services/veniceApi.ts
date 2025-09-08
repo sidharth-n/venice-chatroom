@@ -157,12 +157,27 @@ export const callVeniceApi = async (
   // Get dynamic response configuration based on conversation flow and context
   const responseConfig = getResponseConfig(messageCount, lastUserMessage);
   
-  // Add response style instruction to the last user message or create new system message
+  // Build conversation history summary (excluding the most recent message)
+  const conversationHistory = optimizedMessages
+    .slice(0, -1) // Exclude the most recent message
+    .filter(msg => msg.role !== 'system')
+    .map(msg => {
+      const speaker = msg.role === 'user' ? 'User' : 'AI';
+      return `[${speaker}: ${msg.content}]`;
+    })
+    .join(' ');
+  
+  // Create enhanced prompt with client's suggested structure
   const enhancedMessages = [...optimizedMessages];
   if (enhancedMessages.length > 0) {
     const lastMessage = enhancedMessages[enhancedMessages.length - 1];
     if (lastMessage.role === 'user') {
-      lastMessage.content += ` ${responseConfig.promptSuffix}`;
+      // Apply client's suggested structure: "[most recent prompt] [style instruction] As a reminder, here's what we've been talking about: [prior convos]"
+      const enhancedPrompt = conversationHistory 
+        ? `${lastMessage.content} ${responseConfig.promptSuffix} As a reminder, here's what we've been talking about: ${conversationHistory}`
+        : `${lastMessage.content} ${responseConfig.promptSuffix}`;
+      
+      lastMessage.content = enhancedPrompt;
     } else {
       enhancedMessages.push({
         role: 'system',
