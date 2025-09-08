@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Menu, X, Users, MessageSquare, Send, Play } from 'lucide-react';
+import { ArrowLeft, Menu, X, Users, MessageSquare, Send, Play, Trash2, Star, Globe, Hash } from 'lucide-react';
 import MessageList from './MessageList';
 import { Message } from '../types';
+import { VeniceCharacter } from '../services/veniceApi';
 
 interface ChatroomPageProps {
   character1Name: string;
@@ -13,6 +14,9 @@ interface ChatroomPageProps {
   onGoBackToSetup: () => void;
   onReset: () => void;
   onUserMessage?: (message: string) => void;
+  character1Details?: VeniceCharacter;
+  character2Details?: VeniceCharacter;
+  onClearConversation?: () => void;
 }
 
 const ChatroomPage: React.FC<ChatroomPageProps> = ({
@@ -24,10 +28,14 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
   onGenerateNextMessage,
   onGoBackToSetup,
   onReset,
-  onUserMessage
+  onUserMessage,
+  character1Details,
+  character2Details,
+  onClearConversation
 }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [userInput, setUserInput] = useState('');
+  const [selectedCharacterForPopup, setSelectedCharacterForPopup] = useState<VeniceCharacter | null>(null);
   const firstMessage = messages.length > 0 ? messages[0].content : '';
 
   const handleUserSubmit = async () => {
@@ -35,6 +43,25 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
       const messageContent = userInput.trim();
       setUserInput('');
       onUserMessage(messageContent);
+    }
+  };
+
+  const handleCharacterClick = (characterDetails: VeniceCharacter | undefined, characterName: string) => {
+    if (characterDetails) {
+      setSelectedCharacterForPopup(characterDetails);
+      document.body.style.overflow = 'hidden';
+    }
+  };
+
+  const closePopup = () => {
+    setSelectedCharacterForPopup(null);
+    document.body.style.overflow = 'unset';
+  };
+
+  const handleClearConversation = () => {
+    if (onClearConversation) {
+      onClearConversation();
+      setIsDrawerOpen(false);
     }
   };
 
@@ -108,13 +135,19 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
                 <h4 className="text-base font-medium text-venice-olive-brown">Participants</h4>
               </div>
               <div className="space-y-2">
-                <div className="flex items-center space-x-3 p-3 bg-venice-cream rounded-lg hover:bg-venice-beige transition-colors">
+                <div 
+                  onClick={() => handleCharacterClick(character1Details, character1Name)}
+                  className="flex items-center space-x-3 p-3 bg-venice-cream rounded-lg hover:bg-venice-beige transition-colors cursor-pointer"
+                >
                   <div className="w-10 h-10 bg-venice-bright-red rounded-full flex items-center justify-center shadow-sm">
                     <span className="text-white text-sm font-medium">{character1Name.charAt(0)}</span>
                   </div>
                   <span className="text-sm font-medium text-venice-dark-olive">{character1Name}</span>
                 </div>
-                <div className="flex items-center space-x-3 p-3 bg-venice-cream rounded-lg hover:bg-venice-beige transition-colors">
+                <div 
+                  onClick={() => handleCharacterClick(character2Details, character2Name)}
+                  className="flex items-center space-x-3 p-3 bg-venice-cream rounded-lg hover:bg-venice-beige transition-colors cursor-pointer"
+                >
                   <div className="w-10 h-10 bg-venice-olive-brown rounded-full flex items-center justify-center shadow-sm">
                     <span className="text-white text-sm font-medium">{character2Name.charAt(0)}</span>
                   </div>
@@ -135,6 +168,21 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
                 </div>
               </div>
             )}
+
+            {/* Clear Conversation Button */}
+            <div>
+              <div className="flex items-center space-x-2 mb-3">
+                <Trash2 className="w-4 h-4 text-venice-olive-brown" />
+                <h4 className="text-base font-medium text-venice-olive-brown">Actions</h4>
+              </div>
+              <button
+                onClick={handleClearConversation}
+                className="w-full flex items-center justify-center space-x-2 p-3 bg-venice-bright-red hover:bg-venice-muted-red text-white rounded-lg transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span className="text-sm font-medium">Clear Conversation</span>
+              </button>
+            </div>
           </div>
         </div>
       </>
@@ -199,6 +247,90 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Character Detail Popup */}
+      {selectedCharacterForPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-hidden">
+          <div className="bg-venice-white rounded-lg w-full max-w-md max-h-[80vh] flex flex-col">
+            {/* Popup Header */}
+            <div className="flex items-center justify-between p-3 sm:p-6 border-b border-venice-stone border-opacity-20">
+              <h3 className="text-lg sm:text-xl font-bold text-venice-olive-brown">Character Details</h3>
+              <button
+                onClick={closePopup}
+                className="text-venice-dark-olive hover:text-venice-olive-brown transition-colors"
+              >
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+            </div>
+
+            {/* Popup Content */}
+            <div className="p-4 flex-1 overflow-y-auto">
+              <div className="space-y-3">
+                {/* Character Name */}
+                <div>
+                  <h3 className="text-lg font-bold text-venice-olive-brown mb-1 leading-tight">
+                    {selectedCharacterForPopup.name}
+                  </h3>
+                </div>
+
+                {/* Character Stats */}
+                <div className="grid grid-cols-1 gap-2">
+                  <div className="flex items-center space-x-2 text-sm text-venice-dark-olive">
+                    <Star className="w-4 h-4 flex-shrink-0" />
+                    <span>{selectedCharacterForPopup.stats.imports} imports</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm text-venice-dark-olive">
+                    {selectedCharacterForPopup.webEnabled ? (
+                      <>
+                        <Globe className="w-4 h-4 flex-shrink-0" />
+                        <span>Web Enabled</span>
+                      </>
+                    ) : (
+                      <>
+                        <MessageSquare className="w-4 h-4 flex-shrink-0" />
+                        <span>Chat Only</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <h4 className="text-sm font-semibold text-venice-olive-brown mb-1">Description</h4>
+                  <div className="max-h-32 overflow-y-auto">
+                    <p className="text-venice-dark-olive leading-relaxed text-sm">
+                      {selectedCharacterForPopup.description}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Tags */}
+                <div>
+                  <h4 className="text-sm font-semibold text-venice-olive-brown mb-1 flex items-center">
+                    <Hash className="w-4 h-4 mr-1 flex-shrink-0" />
+                    Tags
+                  </h4>
+                  <div className="flex flex-wrap gap-1">
+                    {selectedCharacterForPopup.tags.slice(0, 6).map(tag => (
+                      <span
+                        key={tag}
+                        className="bg-venice-cream text-venice-olive-brown text-xs px-2 py-1 rounded-full border border-venice-stone border-opacity-30"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    {selectedCharacterForPopup.tags.length > 6 && (
+                      <span className="text-xs text-venice-dark-olive">
+                        +{selectedCharacterForPopup.tags.length - 6} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

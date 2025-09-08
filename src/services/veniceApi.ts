@@ -142,48 +142,70 @@ const buildConversationContext = (
 };
 
 export const callVeniceApi = async (
-  messages: VeniceMessage[],
-  characterSlug: string,
-  messageCount: number = 0
+  messages: VeniceMessage[], 
+  characterSlug: string, 
+  messageCount: number
 ): Promise<string> => {
-  // Optimize context to prevent token overflow and reduce costs
-  const optimizedMessages = buildConversationContext(messages);
+  if (!API_KEY) {
+    throw new Error('Venice API key not found. Please set VITE_VENICE_API_KEY in your environment variables.');
+  }
+
+  // Validate input messages
+  if (!messages || messages.length === 0) {
+    throw new Error('No messages provided to Venice API');
+  }
+
+  // Optimize conversation context to manage token usage
+  let optimizedMessages = buildConversationContext(messages);
   
-  // Get the last message content for context analysis
+  // Validate optimized messages
+  if (!optimizedMessages || optimizedMessages.length === 0) {
+    // Fallback: create a basic user message if optimization failed
+    optimizedMessages = [{
+      role: 'user',
+      content: 'Hello, please start our conversation.'
+    }];
+  }
+  
+  // Get the last user message for analysis
+  const lastMessage = optimizedMessages[optimizedMessages.length - 1];
   const lastUserMessage = optimizedMessages
-    .filter(msg => msg.role === 'user')
-    .pop()?.content || '';
+    .slice()
+    .reverse()
+    .find(msg => msg.role === 'user')?.content || '';
   
-  // Get dynamic response configuration based on conversation flow and context
+  // Analyze message context and get response configuration
   const responseConfig = getResponseConfig(messageCount, lastUserMessage);
   
-  // Build conversation history summary (excluding the most recent message)
+  // Build conversation summary for enhanced prompt
   const conversationHistory = optimizedMessages
-    .slice(0, -1) // Exclude the most recent message
+    .slice(0, -1)
     .filter(msg => msg.role !== 'system')
     .map(msg => {
       const speaker = msg.role === 'user' ? 'User' : 'AI';
       return `[${speaker}: ${msg.content}]`;
     })
     .join(' ');
-  
-  // Create enhanced prompt with client's suggested structure
+
+  // Create enhanced prompt with conversation summary
+  const enhancedPrompt = conversationHistory 
+    ? `${lastMessage.content} ${responseConfig.promptSuffix} As a reminder, here's what we've been talking about: ${conversationHistory}`
+    : `${lastMessage.content} ${responseConfig.promptSuffix}`;
+
+  // Create enhanced messages array
   const enhancedMessages = [...optimizedMessages];
-  if (enhancedMessages.length > 0) {
+  
+  // Update the last message with enhanced prompt or add system message
+  if (enhancedMessages.length > 0 && enhancedMessages[enhancedMessages.length - 1].role === 'user') {
     const lastMessage = enhancedMessages[enhancedMessages.length - 1];
-    if (lastMessage.role === 'user') {
-      // Apply client's suggested structure: "[most recent prompt] [style instruction] As a reminder, here's what we've been talking about: [prior convos]"
-      const enhancedPrompt = conversationHistory 
-        ? `${lastMessage.content} ${responseConfig.promptSuffix} As a reminder, here's what we've been talking about: ${conversationHistory}`
-        : `${lastMessage.content} ${responseConfig.promptSuffix}`;
-      
+    if (lastMessage) {
       lastMessage.content = enhancedPrompt;
-    } else {
-      enhancedMessages.push({
-        role: 'system',
-        content: responseConfig.promptSuffix
-      });
     }
+  } else {
+    enhancedMessages.push({
+      role: 'system',
+      content: responseConfig.promptSuffix
+    });
   }
   
   const requestBody = {
@@ -205,6 +227,8 @@ export const callVeniceApi = async (
   };
 
   try {
+    console.log('Venice API Request:', JSON.stringify(requestBody, null, 2));
+    
     const response = await fetch(VENICE_API_URL, {
       method: 'POST',
       headers: {
@@ -216,7 +240,12 @@ export const callVeniceApi = async (
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('API Error Details:', errorText);
+      console.error('API Error Details:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+        requestBody: requestBody
+      });
       throw new Error(`API request failed: ${response.status} ${response.statusText}`);
     }
 

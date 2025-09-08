@@ -10,10 +10,17 @@ export interface ConversationState {
   timestamp: number;
 }
 
-// Generate storage key from character names
-export const generateStorageKey = (character1Name: string, character2Name: string): string => {
+// Generate storage key from character names and initial prompt
+export const generateStorageKey = (character1Name: string, character2Name: string, initialPrompt?: string): string => {
   const sanitizedName1 = character1Name.toLowerCase().replace(/[^a-z0-9]/g, '');
   const sanitizedName2 = character2Name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  
+  if (initialPrompt) {
+    // Create a hash of the initial prompt to make it unique per topic
+    const promptHash = initialPrompt.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 20);
+    return `venice_conversation_${sanitizedName1}_${sanitizedName2}_${promptHash}`;
+  }
+  
   return `venice_conversation_${sanitizedName1}_${sanitizedName2}`;
 };
 

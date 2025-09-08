@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PageType, Message } from './types';
 import { getCharacterName, getCharacterSlug } from './utils';
 import { callVeniceApi, VeniceMessage, VeniceCharacter } from './services/veniceApi';
@@ -31,7 +31,7 @@ const App: React.FC = () => {
   
   // Generate storage key for current conversation
   const storageKey = character1Name && character2Name 
-    ? generateStorageKey(character1Name, character2Name)
+    ? generateStorageKey(character1Name, character2Name, initialPrompt)
     : '';
 
   // Load conversation on component mount and cleanup old conversations
@@ -39,16 +39,7 @@ const App: React.FC = () => {
     cleanupOldConversations();
   }, []);
 
-  // Load saved conversation when both characters are set
-  useEffect(() => {
-    if (storageKey && currentPage === 'chatroom') {
-      const savedConversation = loadConversation(storageKey);
-      if (savedConversation) {
-        setMessages(savedConversation.messages);
-        setCurrentTurn(savedConversation.currentTurn);
-      }
-    }
-  }, [storageKey, currentPage]);
+  // Removed this useEffect to prevent duplicate loading since we handle it in startChatroom
 
   // Save conversation whenever messages change
   useEffect(() => {
@@ -69,28 +60,55 @@ const App: React.FC = () => {
     setCurrentPage('setup');
   };
 
+  // Guard to prevent duplicate initializations
+  const startChatroomGuard = useRef(false);
+  // Keep a ref of latest messages to avoid stale state in timeouts
+  const messagesRef = useRef<Message[]>(messages);
+  // Guard to prevent double AI generations within the same tick
+  const generatingRef = useRef(false);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
   const startChatroom = () => {
+    if (startChatroomGuard.current) return; // prevent double-invocation
+    startChatroomGuard.current = true;
     if (character1Url.trim() && character2Url.trim() && initialPrompt.trim()) {
-      setMessages([{
-        id: 1,
-        character: 'User',
-        content: initialPrompt,
-        timestamp: new Date()
-      }]);
+      const newStorageKey = generateStorageKey(getCharacterName(character1Url), getCharacterName(character2Url), initialPrompt);
+      const savedConversation = loadConversation(newStorageKey);
+      
       setCurrentPage('chatroom');
       setIsGenerating(false);
+      setPendingUserResponse(false);
+      setLastProcessedMessageId(null);
+      
+      if (savedConversation && savedConversation.messages.length > 0) {
+        // Load existing conversation
+        setMessages(savedConversation.messages);
+        setCurrentTurn(savedConversation.currentTurn);
+        // If the last message is a user message, auto-trigger AI reply
+        const last = savedConversation.messages[savedConversation.messages.length - 1];
+        if (last && last.character === 'User') {
+          setPendingUserResponse(true);
+        }
+      } else {
+        // Start new conversation via the same path as normal user input
+        setMessages([]);
+        setCurrentTurn(1);
+        // Use the unified handler to add the first user message and trigger AI
+        handleUserMessage(initialPrompt);
+      }
+      
       // Reset scroll position when entering chatroom
       setTimeout(() => {
         window.scrollTo(0, 0);
       }, 0);
-      // Auto-start conversation after initial message
-      setTimeout(() => {
-        generateNextMessage();
-      }, 1000);
     }
   };
 
-  const generateNextMessage = async () => {
+  const generateNextMessage = async (messagesSnapshot?: Message[]) => {
+    if (isGenerating) return; // Prevent multiple simultaneous generations
+    
     setIsGenerating(true);
     
     try {
@@ -101,18 +119,14 @@ const App: React.FC = () => {
       // Build conversation history for API
       const conversationHistory: VeniceMessage[] = [];
       
-      // Add initial message as context
-      if (messages.length > 0) {
-        conversationHistory.push({
-          role: 'system',
-          content: `You are engaging in a conversation that started with: "${messages[0].content}". Please respond naturally and stay in character.`
-        });
-      }
+      // Get snapshot to avoid stale closure
+      const currentMessages = (messagesSnapshot && messagesSnapshot.length >= 0) ? messagesSnapshot : messagesRef.current;
       
-      // Add previous messages as conversation context (excluding the first message which is now treated as context)
-      messages.slice(1).forEach(msg => {
+      // If empty for any reason, we'll still proceed and add a default prompt below
+
+      // Add all messages to conversation history
+      currentMessages.forEach(msg => {
         if (msg.character === 'User') {
-          // User messages should always be treated as user input
           conversationHistory.push({
             role: 'user',
             content: msg.content
@@ -132,18 +146,18 @@ const App: React.FC = () => {
         }
       });
       
-      // If this is the first AI response, respond to the opening message
-      if (messages.length === 1) {
+      // Ensure we have at least one message for the API
+      if (conversationHistory.length === 0) {
         conversationHistory.push({
           role: 'user',
-          content: `Please respond to this message and continue the conversation naturally.`
+          content: 'Hello, please start our conversation.'
         });
       }
       
-      const response = await callVeniceApi(conversationHistory, currentCharacterSlug, messages.length);
+      const response = await callVeniceApi(conversationHistory, currentCharacterSlug, currentMessages.length);
       
       const newMessage: Message = {
-        id: messages.length + 1,
+        id: Date.now(), // Use timestamp as unique ID to prevent duplicates
         character: currentCharacter,
         content: response,
         timestamp: new Date()
@@ -153,14 +167,14 @@ const App: React.FC = () => {
       setCurrentTurn(currentTurn === 1 ? 2 : 1);
     } catch (error) {
       console.error('Failed to generate message:', error);
-      // Fallback to a generic error message
-      const newMessage: Message = {
-        id: messages.length + 1,
-        character: currentCharacter,
-        content: "I'm having trouble responding right now. Please try again.",
+      // Add a graceful fallback assistant message so the chat continues
+      const fallbackMessage: Message = {
+        id: Date.now(),
+        character: currentTurn === 1 ? character1Name : character2Name,
+        content: "I'm having trouble responding right now, but let's keep chatting. Could you rephrase or continue?",
         timestamp: new Date()
       };
-      setMessages(prev => [...prev, newMessage]);
+      setMessages(prev => [...prev, fallbackMessage]);
       setCurrentTurn(currentTurn === 1 ? 2 : 1);
     } finally {
       setIsGenerating(false);
@@ -168,27 +182,36 @@ const App: React.FC = () => {
   };
 
   const [pendingUserResponse, setPendingUserResponse] = useState(false);
+  const [lastProcessedMessageId, setLastProcessedMessageId] = useState<number | null>(null);
 
   const handleUserMessage = (content: string) => {
     const newMessage: Message = {
-      id: messages.length + 1,
+      id: Date.now(),
       character: 'User',
       content: content,
       timestamp: new Date()
     };
+    // Update ref immediately to avoid stale snapshots
+    messagesRef.current = [...messagesRef.current, newMessage];
     setMessages(prev => [...prev, newMessage]);
+    // Let the effect handle auto-triggering the AI (avoids stale state)
     setPendingUserResponse(true);
   };
 
   // Effect to trigger AI response after user message is added to state
   useEffect(() => {
-    if (pendingUserResponse && messages.length > 0 && messages[messages.length - 1].character === 'User') {
-      setPendingUserResponse(false);
-      setTimeout(() => {
-        generateNextMessage();
-      }, 200); // Small delay to ensure state is fully updated
-    }
-  }, [messages, pendingUserResponse]);
+    if (!pendingUserResponse) return;
+    if (messages.length === 0) return;
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage.character !== 'User') return;
+    // Only process if we haven't already processed this message
+    if (lastProcessedMessageId === lastMessage.id) return;
+
+    // Mark as processed and trigger generation (avoid parallel runs inside generateNextMessage)
+    setPendingUserResponse(false);
+    setLastProcessedMessageId(lastMessage.id);
+    generateNextMessage(messages);
+  }, [messages, pendingUserResponse, lastProcessedMessageId]);
 
   const resetApp = () => {
     // Clear saved conversation from localStorage
@@ -199,14 +222,15 @@ const App: React.FC = () => {
     setCurrentPage('landing');
     setMessages([]);
     setCurrentTurn(1);
-    setCharacter1Url('');
-    setCharacter2Url('');
-    setInitialPrompt('');
     setIsGenerating(false);
+    setPendingUserResponse(false);
+    setLastProcessedMessageId(null);
+    startChatroomGuard.current = false;
   };
 
   const goBackToSetup = () => {
     setCurrentPage('setup');
+    startChatroomGuard.current = false;
   };
 
   const openCharacterSelector = (target: 1 | 2) => {
@@ -230,8 +254,20 @@ const App: React.FC = () => {
     setCurrentPage('setup');
   };
 
+  const handleClearConversation = () => {
+    if (storageKey) {
+      clearConversation(storageKey);
+    }
+    setMessages([]);
+    setCurrentTurn(1);
+    setPendingUserResponse(false); // Reset pending state to prevent duplicate responses
+    setIsGenerating(false); // Ensure generating state is reset
+    setLastProcessedMessageId(null); // Reset processed message tracking
+  };
+
   const backFromCharacterSelector = () => {
     setCurrentPage('setup');
+    startChatroomGuard.current = false;
   };
 
   if (currentPage === 'landing') {
@@ -267,6 +303,10 @@ const App: React.FC = () => {
     );
   }
 
+  // Get character details from selected characters
+  const character1Details = selectedCharacters.find(char => char.shareUrl === character1Url);
+  const character2Details = selectedCharacters.find(char => char.shareUrl === character2Url);
+
   return (
     <ChatroomPage
       character1Name={character1Name}
@@ -278,6 +318,9 @@ const App: React.FC = () => {
       onGoBackToSetup={goBackToSetup}
       onReset={resetApp}
       onUserMessage={handleUserMessage}
+      character1Details={character1Details}
+      character2Details={character2Details}
+      onClearConversation={handleClearConversation}
     />
   );
 };

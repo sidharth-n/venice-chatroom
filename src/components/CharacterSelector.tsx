@@ -51,7 +51,6 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
     const cachedData = loadCharacters();
     if (cachedData) {
       setCharacters(cachedData);
-      setCachedCharacters(cachedData);
       setLoading(false);
       return;
     }
@@ -67,7 +66,6 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
       setLoading(true);
       const fetchedCharacters = await fetchVeniceCharacters();
       setCharacters(fetchedCharacters);
-      setCachedCharacters(fetchedCharacters);
       // Save to localStorage
       saveCharacters(fetchedCharacters);
     } catch {
@@ -75,7 +73,7 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [cachedCharacters, setCachedCharacters]);
+  }, []);
 
   useEffect(() => {
     loadCharactersData();
