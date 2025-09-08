@@ -167,22 +167,28 @@ const App: React.FC = () => {
     }
   };
 
-  const handleUserMessage = (content: string, callback?: () => void) => {
+  const [pendingUserResponse, setPendingUserResponse] = useState(false);
+
+  const handleUserMessage = (content: string) => {
     const newMessage: Message = {
       id: messages.length + 1,
       character: 'User',
       content: content,
       timestamp: new Date()
     };
-    setMessages(prev => {
-      const updated = [...prev, newMessage];
-      // Call callback after state update
-      if (callback) {
-        setTimeout(callback, 0);
-      }
-      return updated;
-    });
+    setMessages(prev => [...prev, newMessage]);
+    setPendingUserResponse(true);
   };
+
+  // Effect to trigger AI response after user message is added to state
+  useEffect(() => {
+    if (pendingUserResponse && messages.length > 0 && messages[messages.length - 1].character === 'User') {
+      setPendingUserResponse(false);
+      setTimeout(() => {
+        generateNextMessage();
+      }, 200); // Small delay to ensure state is fully updated
+    }
+  }, [messages, pendingUserResponse]);
 
   const resetApp = () => {
     // Clear saved conversation from localStorage
