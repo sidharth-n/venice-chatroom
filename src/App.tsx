@@ -57,6 +57,11 @@ const App: React.FC = () => {
   }, [messages, currentTurn, storageKey, initialPrompt, character1Url, character2Url]);
 
   const startSetup = () => {
+    // Ensure clean slate when opening setup
+    setCharacter1Url('');
+    setCharacter2Url('');
+    setInitialPrompt('');
+    setSelectedCharacters([]);
     setCurrentPage('setup');
   };
 
@@ -226,6 +231,11 @@ const App: React.FC = () => {
     setPendingUserResponse(false);
     setLastProcessedMessageId(null);
     startChatroomGuard.current = false;
+    // Clear setup inputs and selections
+    setCharacter1Url('');
+    setCharacter2Url('');
+    setInitialPrompt('');
+    setSelectedCharacters([]);
   };
 
   const goBackToSetup = () => {
