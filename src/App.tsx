@@ -111,16 +111,23 @@ const App: React.FC = () => {
       
       // Add previous messages as conversation context (excluding the first message which is now treated as context)
       messages.slice(1).forEach(msg => {
-        if (msg.character !== 'You') {
-          conversationHistory.push({
-            role: msg.character === currentCharacter ? 'assistant' : 'user',
-            content: msg.content
-          });
-        } else {
-          // User messages
+        if (msg.character === 'User') {
+          // User messages should always be treated as user input
           conversationHistory.push({
             role: 'user',
             content: msg.content
+          });
+        } else if (msg.character === currentCharacter) {
+          // Current character's previous messages
+          conversationHistory.push({
+            role: 'assistant',
+            content: msg.content
+          });
+        } else {
+          // Other character's messages (treat as user for context)
+          conversationHistory.push({
+            role: 'user',
+            content: `${msg.character}: ${msg.content}`
           });
         }
       });
@@ -149,7 +156,7 @@ const App: React.FC = () => {
       // Fallback to a generic error message
       const newMessage: Message = {
         id: messages.length + 1,
-        character: currentTurn === 1 ? character1Name : character2Name,
+        character: currentCharacter,
         content: "I'm having trouble responding right now. Please try again.",
         timestamp: new Date()
       };
@@ -160,14 +167,21 @@ const App: React.FC = () => {
     }
   };
 
-  const handleUserMessage = (content: string) => {
+  const handleUserMessage = (content: string, callback?: () => void) => {
     const newMessage: Message = {
       id: messages.length + 1,
       character: 'User',
       content: content,
       timestamp: new Date()
     };
-    setMessages(prev => [...prev, newMessage]);
+    setMessages(prev => {
+      const updated = [...prev, newMessage];
+      // Call callback after state update
+      if (callback) {
+        setTimeout(callback, 0);
+      }
+      return updated;
+    });
   };
 
   const resetApp = () => {

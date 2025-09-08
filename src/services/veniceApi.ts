@@ -200,6 +200,8 @@ export const callVeniceApi = async (
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API Error Details:', errorText);
       throw new Error(`API request failed: ${response.status} ${response.statusText}`);
     }
 

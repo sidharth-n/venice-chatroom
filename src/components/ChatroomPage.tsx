@@ -12,7 +12,7 @@ interface ChatroomPageProps {
   onGenerateNextMessage: () => void;
   onGoBackToSetup: () => void;
   onReset: () => void;
-  onUserMessage?: (message: string) => void;
+  onUserMessage?: (message: string, callback?: () => void) => void;
 }
 
 const ChatroomPage: React.FC<ChatroomPageProps> = ({
@@ -30,14 +30,14 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
   const [userInput, setUserInput] = useState('');
   const firstMessage = messages.length > 0 ? messages[0].content : '';
 
-  const handleUserSubmit = () => {
+  const handleUserSubmit = async () => {
     if (userInput.trim() && onUserMessage) {
-      onUserMessage(userInput.trim());
+      const messageContent = userInput.trim();
       setUserInput('');
-      // Auto-trigger AI response after user message
-      setTimeout(() => {
+      // Pass callback to ensure AI response happens after user message is added to state
+      onUserMessage(messageContent, () => {
         onGenerateNextMessage();
-      }, 500);
+      });
     }
   };
 
