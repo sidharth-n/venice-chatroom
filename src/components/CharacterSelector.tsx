@@ -12,23 +12,28 @@ const Avatar: React.FC<{ name: string; photoUrl?: string; size?: number }> = ({ 
       className="relative rounded-lg overflow-hidden bg-venice-cream border border-venice-stone border-opacity-20"
       style={{ width: '100%', height: size }}
     >
+      {/* Fallback visible immediately */}
+      <div className="absolute inset-0 flex items-center justify-center text-venice-olive-brown z-0">
+        <div className="w-10 h-10 rounded-full bg-venice-cream flex items-center justify-center border border-venice-stone border-opacity-30 shadow-sm">
+          <span className="font-semibold">{letter}</span>
+        </div>
+      </div>
+      {/* Image overlays with face-centric crop and fade-in */}
       {photoUrl ? (
         <img
           src={getSafePhotoUrl(photoUrl)}
           alt={`${name} photo`}
           loading="lazy"
           decoding="async"
-          className="w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-top opacity-0 transition-opacity duration-300"
+          onLoad={(e) => {
+            (e.currentTarget as HTMLImageElement).style.opacity = '1';
+          }}
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).style.display = 'none';
           }}
         />
       ) : null}
-      <div className="absolute inset-0 flex items-center justify-center text-venice-olive-brown">
-        <div className="w-10 h-10 rounded-full bg-venice-cream flex items-center justify-center border border-venice-stone border-opacity-30 shadow-sm">
-          <span className="font-semibold">{letter}</span>
-        </div>
-      </div>
     </div>
   );
 };

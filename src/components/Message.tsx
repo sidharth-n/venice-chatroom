@@ -44,24 +44,23 @@ const Message: React.FC<MessageProps> = ({ message, isLeftSide, avatarUrl }) => 
     <div className={`flex ${isLeftSide ? 'justify-start' : 'justify-end'} items-end space-x-2 mb-3 sm:mb-4`}>
       {/* Left side avatar */}
       {isLeftSide && (
-        <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 shadow-sm">
-          {avatarUrl ? (
+        <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0 shadow-sm">
+          <div className={`absolute inset-0 ${avatarBg} rounded-full flex items-center justify-center`}>
+            <span className="text-white text-sm font-medium">{avatarLetter}</span>
+          </div>
+          {avatarUrl && (
             <img
               src={avatarUrl}
               alt={`${message.character} avatar`}
-              loading="lazy"
               decoding="async"
-              className="w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover object-top opacity-0 transition-opacity duration-200"
+              onLoad={(e) => {
+                (e.currentTarget as HTMLImageElement).style.opacity = '1';
+              }}
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).style.display = 'none';
-                const parent = (e.currentTarget.parentElement as HTMLDivElement);
-                if (parent) parent.className = `w-8 h-8 ${avatarBg} rounded-full flex items-center justify-center shadow-sm flex-shrink-0`;
               }}
             />
-          ) : (
-            <div className={`w-8 h-8 ${avatarBg} rounded-full flex items-center justify-center`}>
-              <span className="text-white text-sm font-medium">{avatarLetter}</span>
-            </div>
           )}
         </div>
       )}
@@ -86,24 +85,23 @@ const Message: React.FC<MessageProps> = ({ message, isLeftSide, avatarUrl }) => 
       
       {/* Right side avatar */}
       {!isLeftSide && (
-        <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 shadow-sm">
-          {avatarUrl ? (
+        <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0 shadow-sm">
+          <div className={`absolute inset-0 ${avatarBg} rounded-full flex items-center justify-center`}>
+            <span className="text-white text-sm font-medium">{avatarLetter}</span>
+          </div>
+          {avatarUrl && (
             <img
               src={avatarUrl}
               alt={`${message.character} avatar`}
-              loading="lazy"
               decoding="async"
-              className="w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover object-top opacity-0 transition-opacity duration-200"
+              onLoad={(e) => {
+                (e.currentTarget as HTMLImageElement).style.opacity = '1';
+              }}
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).style.display = 'none';
-                const parent = (e.currentTarget.parentElement as HTMLDivElement);
-                if (parent) parent.className = `w-8 h-8 ${avatarBg} rounded-full flex items-center justify-center shadow-sm flex-shrink-0`;
               }}
             />
-          ) : (
-            <div className={`w-8 h-8 ${avatarBg} rounded-full flex items-center justify-center`}>
-              <span className="text-white text-sm font-medium">{avatarLetter}</span>
-            </div>
           )}
         </div>
       )}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Menu, X, Users, MessageSquare, Send, Play, Trash2, Star, Globe, Hash } from 'lucide-react';
 import MessageList from './MessageList';
 import { Message } from '../types';
@@ -58,6 +58,25 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
     setSelectedCharacterForPopup(null);
     document.body.style.overflow = 'unset';
   };
+
+  // Preload character images when chatroom loads to prevent flickering
+  useEffect(() => {
+    const preloadImages = () => {
+      const imagesToPreload = [
+        character1Details?.photoUrl,
+        character2Details?.photoUrl
+      ].filter(Boolean);
+
+      imagesToPreload.forEach(url => {
+        if (url) {
+          const img = new Image();
+          img.src = getSafePhotoUrl(url) || url;
+        }
+      });
+    };
+
+    preloadImages();
+  }, [character1Details?.photoUrl, character2Details?.photoUrl]);
 
   const handleClearConversation = () => {
     if (onClearConversation) {
@@ -147,7 +166,7 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
                         alt={`${character1Name} avatar`}
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-top"
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).style.display = 'none';
                           const parent = (e.currentTarget.parentElement as HTMLDivElement);
@@ -173,7 +192,7 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
                         alt={`${character2Name} avatar`}
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-top"
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).style.display = 'none';
                           const parent = (e.currentTarget.parentElement as HTMLDivElement);
