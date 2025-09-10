@@ -23,9 +23,15 @@ export const getSafePhotoUrl = (url?: string): string | undefined => {
   if (!url) return undefined;
   try {
     const u = new URL(url);
-    if (import.meta && import.meta.env && import.meta.env.DEV && u.hostname === 'outerface.venice.ai') {
-      // Proxy through Vite dev server
-      return `/venice-photo${u.pathname}${u.search}`;
+    const isDev = import.meta && import.meta.env && import.meta.env.DEV;
+    if (u.hostname === 'outerface.venice.ai') {
+      if (isDev) {
+        // Dev: proxy through Vite dev server
+        return `/venice-photo${u.pathname}${u.search}`;
+      }
+      // Prod: proxy through Vercel serverless function
+      const encoded = encodeURIComponent(u.toString());
+      return `/api/proxy-photo?url=${encoded}`;
     }
     return url;
   } catch {
