@@ -4,6 +4,7 @@ import MessageList from './MessageList';
 import { Message } from '../types';
 import { VeniceCharacter } from '../services/veniceApi';
 import { getSafePhotoUrl } from '../utils';
+import { imageCache } from '../utils/imageCache';
 
 interface ChatroomPageProps {
   character1Name: string;
@@ -61,21 +62,16 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
 
   // Preload character images when chatroom loads to prevent flickering
   useEffect(() => {
-    const preloadImages = () => {
-      const imagesToPreload = [
-        character1Details?.photoUrl,
-        character2Details?.photoUrl
-      ].filter(Boolean);
+    const imagesToPreload = [
+      character1Details?.photoUrl,
+      character2Details?.photoUrl
+    ]
+      .filter((url): url is string => Boolean(url))
+      .map(url => getSafePhotoUrl(url) || url);
 
-      imagesToPreload.forEach(url => {
-        if (url) {
-          const img = new Image();
-          img.src = getSafePhotoUrl(url) || url;
-        }
-      });
-    };
-
-    preloadImages();
+    if (imagesToPreload.length > 0) {
+      imageCache.preloadMultiple(imagesToPreload);
+    }
   }, [character1Details?.photoUrl, character2Details?.photoUrl]);
 
   const handleClearConversation = () => {
@@ -162,7 +158,7 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
                   <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm flex-shrink-0">
                     {character1Details?.photoUrl ? (
                       <img
-                        src={getSafePhotoUrl(character1Details.photoUrl)}
+                        src={imageCache.getDisplayUrl(getSafePhotoUrl(character1Details.photoUrl) || character1Details.photoUrl)}
                         alt={`${character1Name} avatar`}
                         loading="lazy"
                         decoding="async"
@@ -188,7 +184,7 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
                   <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm flex-shrink-0">
                     {character2Details?.photoUrl ? (
                       <img
-                        src={getSafePhotoUrl(character2Details.photoUrl)}
+                        src={imageCache.getDisplayUrl(getSafePhotoUrl(character2Details.photoUrl) || character2Details.photoUrl)}
                         alt={`${character2Name} avatar`}
                         loading="lazy"
                         decoding="async"
@@ -326,11 +322,11 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
                 <div className="w-full rounded-lg overflow-hidden border border-venice-stone border-opacity-20 bg-venice-cream">
                   {selectedCharacterForPopup.photoUrl ? (
                     <img
-                      src={getSafePhotoUrl(selectedCharacterForPopup.photoUrl)}
+                      src={imageCache.getDisplayUrl(getSafePhotoUrl(selectedCharacterForPopup.photoUrl) || selectedCharacterForPopup.photoUrl)}
                       alt={`${selectedCharacterForPopup.name} photo`}
                       loading="lazy"
                       decoding="async"
-                      className="w-full h-56 object-cover"
+                      className="w-full h-56 object-contain"
                       onError={(e) => {
                         (e.currentTarget as HTMLImageElement).style.display = 'none';
                       }}

@@ -3,10 +3,14 @@ import { ArrowLeft, Search, X, Star, Globe, MessageCircle, Hash, ChevronLeft, Ch
 import { VeniceCharacter, fetchVeniceCharacters } from '../services/veniceApi';
 import { loadCharacters, saveCharacters } from '../utils/localStorage';
 import { getSafePhotoUrl } from '../utils';
+import { imageCache } from '../utils/imageCache';
 
 // Local avatar component with lazy image and fallback
 const Avatar: React.FC<{ name: string; photoUrl?: string; size?: number }> = ({ name, photoUrl, size = 64 }) => {
   const letter = useMemo(() => name.charAt(0).toUpperCase(), [name]);
+  const safeUrl = photoUrl ? (getSafePhotoUrl(photoUrl) || photoUrl) : undefined;
+  const displayUrl = safeUrl ? imageCache.getDisplayUrl(safeUrl) : undefined;
+  const isCached = safeUrl ? imageCache.isImageCached(safeUrl) : false;
   return (
     <div
       className="relative rounded-lg overflow-hidden bg-venice-cream border border-venice-stone border-opacity-20"
@@ -19,13 +23,13 @@ const Avatar: React.FC<{ name: string; photoUrl?: string; size?: number }> = ({ 
         </div>
       </div>
       {/* Image overlays with face-centric crop and fade-in */}
-      {photoUrl ? (
+      {displayUrl ? (
         <img
-          src={getSafePhotoUrl(photoUrl)}
+          src={displayUrl}
           alt={`${name} photo`}
-          loading="lazy"
+          loading="eager"
           decoding="async"
-          className="absolute inset-0 w-full h-full object-cover object-top opacity-0 transition-opacity duration-300"
+          className={`absolute inset-0 w-full h-full object-contain ${isCached ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
           onLoad={(e) => {
             (e.currentTarget as HTMLImageElement).style.opacity = '1';
           }}
@@ -119,6 +123,19 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   useEffect(() => {
     // no-op: ensures prop is observed for potential UI updates
   }, [_selectedCharacters]);
+
+  // Aggressive image preloading - preload first page of character images immediately
+  useEffect(() => {
+    if (characters.length > 0) {
+      const imagesToPreload = characters.slice(0, 15)
+        .map(char => char.photoUrl)
+        .filter((url): url is string => Boolean(url))
+        .map(url => getSafePhotoUrl(url) || url);
+      
+      // Use image cache for aggressive preloading
+      imageCache.preloadMultiple(imagesToPreload);
+    }
+  }, [characters]);
 
   const getAllTags = () => {
     const allTags = characters.flatMap(char => char.tags);

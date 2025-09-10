@@ -1,4 +1,5 @@
 import React from 'react';
+import { imageCache } from '../utils/imageCache';
 import { Message as MessageType } from '../types';
 
 interface MessageProps {
@@ -50,9 +51,10 @@ const Message: React.FC<MessageProps> = ({ message, isLeftSide, avatarUrl }) => 
           </div>
           {avatarUrl && (
             <img
-              src={avatarUrl}
+              src={imageCache.getDisplayUrl(avatarUrl)}
               alt={`${message.character} avatar`}
               decoding="async"
+              fetchPriority="high"
               className="absolute inset-0 w-full h-full object-cover object-top opacity-0 transition-opacity duration-200"
               onLoad={(e) => {
                 (e.currentTarget as HTMLImageElement).style.opacity = '1';
@@ -91,9 +93,10 @@ const Message: React.FC<MessageProps> = ({ message, isLeftSide, avatarUrl }) => 
           </div>
           {avatarUrl && (
             <img
-              src={avatarUrl}
+              src={imageCache.getDisplayUrl(avatarUrl)}
               alt={`${message.character} avatar`}
               decoding="async"
+              fetchPriority="high"
               className="absolute inset-0 w-full h-full object-cover object-top opacity-0 transition-opacity duration-200"
               onLoad={(e) => {
                 (e.currentTarget as HTMLImageElement).style.opacity = '1';

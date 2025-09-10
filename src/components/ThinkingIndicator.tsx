@@ -1,4 +1,5 @@
 import React from 'react';
+import { imageCache } from '../utils/imageCache';
 
 interface ThinkingIndicatorProps {
   characterName: string;
@@ -21,7 +22,7 @@ const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({ characterName, is
           </div>
           {avatarUrl && (
             <img
-              src={avatarUrl}
+              src={imageCache.getDisplayUrl(avatarUrl)}
               alt={`${characterName} avatar`}
               decoding="async"
               // Fetch with higher priority so it appears together with the thinking bubble
@@ -66,7 +67,7 @@ const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({ characterName, is
           </div>
           {avatarUrl && (
             <img
-              src={avatarUrl}
+              src={imageCache.getDisplayUrl(avatarUrl)}
               alt={`${characterName} avatar`}
               decoding="async"
               fetchPriority="high"
