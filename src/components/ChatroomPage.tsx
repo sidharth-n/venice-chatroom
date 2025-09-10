@@ -248,16 +248,19 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
         character2Details={character2Details}
       />
 
+      {/* Spacer to prevent content from being hidden behind bottom bar */}
+      <div className="h-[96px] sm:h-[88px]" />
+
       {/* Fixed Bottom Bar - WhatsApp-style */}
-      <div 
-        className="bg-venice-white border-t border-venice-stone border-opacity-30 p-3 sm:p-4 z-50 shadow-lg" 
+      <div
+        className={`bg-venice-white border-t border-venice-stone border-opacity-30 p-3 sm:p-4 z-50 shadow-lg fixed inset-x-0 bottom-0 ${
+          isDrawerOpen || selectedCharacterForPopup ? 'hidden' : ''
+        }`}
         style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          width: '100%',
-          zIndex: 50
+          WebkitTransform: 'translateZ(0)',
+          transform: 'translateZ(0)',
+          willChange: 'transform',
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)'
         }}
       >
         <div className="max-w-2xl mx-auto">

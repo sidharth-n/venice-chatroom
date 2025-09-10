@@ -5,7 +5,6 @@ import { callVeniceApi, VeniceMessage, VeniceCharacter } from './services/venice
 import { 
   generateStorageKey, 
   saveConversation, 
-  loadConversation, 
   clearConversation,
   cleanupOldConversations 
 } from './utils/localStorage';
@@ -69,8 +68,6 @@ const App: React.FC = () => {
   const startChatroomGuard = useRef(false);
   // Keep a ref of latest messages to avoid stale state in timeouts
   const messagesRef = useRef<Message[]>(messages);
-  // Guard to prevent double AI generations within the same tick
-  const generatingRef = useRef(false);
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
@@ -79,31 +76,25 @@ const App: React.FC = () => {
     if (startChatroomGuard.current) return; // prevent double-invocation
     startChatroomGuard.current = true;
     if (character1Url.trim() && character2Url.trim() && initialPrompt.trim()) {
-      const newStorageKey = generateStorageKey(getCharacterName(character1Url), getCharacterName(character2Url), initialPrompt);
-      const savedConversation = loadConversation(newStorageKey);
-      
+      const newStorageKey = generateStorageKey(
+        getCharacterName(character1Url),
+        getCharacterName(character2Url),
+        initialPrompt
+      );
+
+      // Always start a fresh conversation for the given settings
+      clearConversation(newStorageKey);
+
       setCurrentPage('chatroom');
       setIsGenerating(false);
       setPendingUserResponse(false);
       setLastProcessedMessageId(null);
-      
-      if (savedConversation && savedConversation.messages.length > 0) {
-        // Load existing conversation
-        setMessages(savedConversation.messages);
-        setCurrentTurn(savedConversation.currentTurn);
-        // If the last message is a user message, auto-trigger AI reply
-        const last = savedConversation.messages[savedConversation.messages.length - 1];
-        if (last && last.character === 'User') {
-          setPendingUserResponse(true);
-        }
-      } else {
-        // Start new conversation via the same path as normal user input
-        setMessages([]);
-        setCurrentTurn(1);
-        // Use the unified handler to add the first user message and trigger AI
-        handleUserMessage(initialPrompt);
-      }
-      
+      setMessages([]);
+      setCurrentTurn(1);
+
+      // Seed the first user message and trigger AI via the existing flow
+      handleUserMessage(initialPrompt);
+
       // Reset scroll position when entering chatroom
       setTimeout(() => {
         window.scrollTo(0, 0);
@@ -216,7 +207,7 @@ const App: React.FC = () => {
     setPendingUserResponse(false);
     setLastProcessedMessageId(lastMessage.id);
     generateNextMessage(messages);
-  }, [messages, pendingUserResponse, lastProcessedMessageId]);
+  }, [messages, pendingUserResponse, lastProcessedMessageId, generateNextMessage]);
 
   const resetApp = () => {
     // Clear saved conversation from localStorage

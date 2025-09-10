@@ -66,6 +66,7 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [charactersPerPage] = useState(12);
   const [loading, setLoading] = useState(true);
+  const [imagesReady, setImagesReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const filteredCharacters = characters.filter(character => {
@@ -84,6 +85,13 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedTag]);
+
+  // Scroll to top on page change for a better UX on pagination
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentPage]);
 
   const loadCharactersData = useCallback(async () => {
     // Try to load from localStorage first
@@ -124,18 +132,24 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
     // no-op: ensures prop is observed for potential UI updates
   }, [_selectedCharacters]);
 
-  // Aggressive image preloading - preload first page of character images immediately
+  // Preload only the first page of images and gate grid render until ready
   useEffect(() => {
     if (characters.length > 0) {
-      const imagesToPreload = characters.slice(0, 15)
+      setImagesReady(false);
+      const firstPage = characters.slice(0, charactersPerPage);
+      const imagesToPreload = firstPage
         .map(char => char.photoUrl)
         .filter((url): url is string => Boolean(url))
         .map(url => getSafePhotoUrl(url) || url);
-      
-      // Use image cache for aggressive preloading
-      imageCache.preloadMultiple(imagesToPreload);
+
+      if (imagesToPreload.length === 0) {
+        setImagesReady(true);
+        return;
+      }
+
+      imageCache.preloadMultiple(imagesToPreload).then(() => setImagesReady(true));
     }
-  }, [characters]);
+  }, [characters, charactersPerPage]);
 
   const getAllTags = () => {
     const allTags = characters.flatMap(char => char.tags);
@@ -161,7 +175,7 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
     document.body.style.overflow = 'unset';
   };
 
-  if (loading) {
+  if (loading || !imagesReady) {
     return (
       <div className="min-h-screen bg-venice-cream flex items-center justify-center p-4">
         <div className="text-center">
