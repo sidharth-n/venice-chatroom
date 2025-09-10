@@ -4,9 +4,10 @@ import { Message as MessageType } from '../types';
 interface MessageProps {
   message: MessageType;
   isLeftSide: boolean;
+  avatarUrl?: string;
 }
 
-const Message: React.FC<MessageProps> = ({ message, isLeftSide }) => {
+const Message: React.FC<MessageProps> = ({ message, isLeftSide, avatarUrl }) => {
   // Handle User messages - right-aligned like normal messaging apps
   if (message.character === 'User') {
     return (
@@ -43,8 +44,25 @@ const Message: React.FC<MessageProps> = ({ message, isLeftSide }) => {
     <div className={`flex ${isLeftSide ? 'justify-start' : 'justify-end'} items-end space-x-2 mb-3 sm:mb-4`}>
       {/* Left side avatar */}
       {isLeftSide && (
-        <div className={`w-8 h-8 ${avatarBg} rounded-full flex items-center justify-center shadow-sm flex-shrink-0`}>
-          <span className="text-white text-sm font-medium">{avatarLetter}</span>
+        <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 shadow-sm">
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={`${message.character} avatar`}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = 'none';
+                const parent = (e.currentTarget.parentElement as HTMLDivElement);
+                if (parent) parent.className = `w-8 h-8 ${avatarBg} rounded-full flex items-center justify-center shadow-sm flex-shrink-0`;
+              }}
+            />
+          ) : (
+            <div className={`w-8 h-8 ${avatarBg} rounded-full flex items-center justify-center`}>
+              <span className="text-white text-sm font-medium">{avatarLetter}</span>
+            </div>
+          )}
         </div>
       )}
       
@@ -68,8 +86,25 @@ const Message: React.FC<MessageProps> = ({ message, isLeftSide }) => {
       
       {/* Right side avatar */}
       {!isLeftSide && (
-        <div className={`w-8 h-8 ${avatarBg} rounded-full flex items-center justify-center shadow-sm flex-shrink-0`}>
-          <span className="text-white text-sm font-medium">{avatarLetter}</span>
+        <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 shadow-sm">
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={`${message.character} avatar`}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = 'none';
+                const parent = (e.currentTarget.parentElement as HTMLDivElement);
+                if (parent) parent.className = `w-8 h-8 ${avatarBg} rounded-full flex items-center justify-center shadow-sm flex-shrink-0`;
+              }}
+            />
+          ) : (
+            <div className={`w-8 h-8 ${avatarBg} rounded-full flex items-center justify-center`}>
+              <span className="text-white text-sm font-medium">{avatarLetter}</span>
+            </div>
+          )}
         </div>
       )}
     </div>

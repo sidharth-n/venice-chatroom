@@ -18,6 +18,21 @@ export const getCharacterSlug = (url: string): string => {
   return match ? match[1] : '';
 };
 
+// Rewrite Venice character photo URLs to a local proxy in dev to avoid cross-origin blocking
+export const getSafePhotoUrl = (url?: string): string | undefined => {
+  if (!url) return undefined;
+  try {
+    const u = new URL(url);
+    if (import.meta && import.meta.env && import.meta.env.DEV && u.hostname === 'outerface.venice.ai') {
+      // Proxy through Vite dev server
+      return `/venice-photo${u.pathname}${u.search}`;
+    }
+    return url;
+  } catch {
+    return url;
+  }
+};
+
 // Enhanced dummy responses for more realistic conversation
 export const dummyResponses = [
   "That's a fascinating perspective. I've been contemplating this from a different angle entirely.",

@@ -1,7 +1,37 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ArrowLeft, Search, X, Star, Globe, MessageCircle, Hash, ChevronLeft, ChevronRight, Users } from 'lucide-react';
 import { VeniceCharacter, fetchVeniceCharacters } from '../services/veniceApi';
 import { loadCharacters, saveCharacters } from '../utils/localStorage';
+import { getSafePhotoUrl } from '../utils';
+
+// Local avatar component with lazy image and fallback
+const Avatar: React.FC<{ name: string; photoUrl?: string; size?: number }> = ({ name, photoUrl, size = 64 }) => {
+  const letter = useMemo(() => name.charAt(0).toUpperCase(), [name]);
+  return (
+    <div
+      className="relative rounded-lg overflow-hidden bg-venice-cream border border-venice-stone border-opacity-20"
+      style={{ width: '100%', height: size }}
+    >
+      {photoUrl ? (
+        <img
+          src={getSafePhotoUrl(photoUrl)}
+          alt={`${name} photo`}
+          loading="lazy"
+          decoding="async"
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).style.display = 'none';
+          }}
+        />
+      ) : null}
+      <div className="absolute inset-0 flex items-center justify-center text-venice-olive-brown">
+        <div className="w-10 h-10 rounded-full bg-venice-cream flex items-center justify-center border border-venice-stone border-opacity-30 shadow-sm">
+          <span className="font-semibold">{letter}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface CharacterSelectorProps {
   onCharacterSelect: (character: VeniceCharacter) => void;
@@ -15,7 +45,7 @@ interface CharacterSelectorProps {
 const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   onCharacterSelect,
   onBack,
-  selectedCharacters,
+  selectedCharacters: _selectedCharacters,
   title,
   cachedCharacters,
   setCachedCharacters
@@ -66,6 +96,7 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
       setLoading(true);
       const fetchedCharacters = await fetchVeniceCharacters();
       setCharacters(fetchedCharacters);
+      setCachedCharacters(fetchedCharacters);
       // Save to localStorage
       saveCharacters(fetchedCharacters);
     } catch {
@@ -73,19 +104,20 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [cachedCharacters, setCachedCharacters]);
 
   useEffect(() => {
     loadCharactersData();
   }, [loadCharactersData]);
 
+  // Acknowledge selected characters prop (may be used for future highlighting)
+  useEffect(() => {
+    // no-op: ensures prop is observed for potential UI updates
+  }, [_selectedCharacters]);
+
   const getAllTags = () => {
     const allTags = characters.flatMap(char => char.tags);
     return [...new Set(allTags)].sort();
-  };
-
-  const isCharacterSelected = (character: VeniceCharacter) => {
-    return selectedCharacters.some(selected => selected.slug === character.slug);
   };
 
   const handleCharacterClick = (character: VeniceCharacter) => {
@@ -224,6 +256,11 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
                 onClick={() => handleCharacterClick(character)}
                 className="bg-venice-white rounded-lg p-4 sm:p-6 shadow-sm border border-venice-stone border-opacity-20 hover:border-venice-red hover:shadow-md transition-all duration-200 cursor-pointer"
               >
+                {/* Image / Avatar */}
+                <div className="mb-3">
+                  <Avatar name={character.name} photoUrl={getSafePhotoUrl(character.photoUrl)} size={160} />
+                </div>
+
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="text-lg sm:text-xl font-bold text-venice-olive-brown line-clamp-2">{character.name}</h3>
                 </div>
@@ -407,6 +444,11 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
               {/* Popup Content */}
               <div className="p-4 flex-1 overflow-y-auto">
                 <div className="space-y-3">
+                  {/* Character Photo */}
+                  <div>
+                    <Avatar name={selectedCharacterForPopup.name} photoUrl={getSafePhotoUrl(selectedCharacterForPopup.photoUrl)} size={220} />
+                  </div>
+                  
                   {/* Character Name */}
                   <div>
                     <h3 className="text-lg font-bold text-venice-olive-brown mb-1 leading-tight">

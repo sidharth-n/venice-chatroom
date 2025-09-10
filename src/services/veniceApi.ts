@@ -12,6 +12,7 @@ export interface VeniceCharacter {
   description: string;
   name: string;
   shareUrl: string;
+  photoUrl?: string;
   slug: string;
   stats: {
     imports: number;
@@ -19,6 +20,7 @@ export interface VeniceCharacter {
   tags: string[];
   updatedAt: string;
   webEnabled: boolean;
+  modelId?: string;
 }
 
 export interface VeniceCharactersResponse {

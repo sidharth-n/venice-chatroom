@@ -3,6 +3,7 @@ import { ArrowLeft, Menu, X, Users, MessageSquare, Send, Play, Trash2, Star, Glo
 import MessageList from './MessageList';
 import { Message } from '../types';
 import { VeniceCharacter } from '../services/veniceApi';
+import { getSafePhotoUrl } from '../utils';
 
 interface ChatroomPageProps {
   character1Name: string;
@@ -46,7 +47,7 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
     }
   };
 
-  const handleCharacterClick = (characterDetails: VeniceCharacter | undefined, characterName: string) => {
+  const handleCharacterClick = (characterDetails: VeniceCharacter | undefined) => {
     if (characterDetails) {
       setSelectedCharacterForPopup(characterDetails);
       document.body.style.overflow = 'hidden';
@@ -136,20 +137,54 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
               </div>
               <div className="space-y-2">
                 <div 
-                  onClick={() => handleCharacterClick(character1Details, character1Name)}
+                  onClick={() => handleCharacterClick(character1Details)}
                   className="flex items-center space-x-3 p-3 bg-venice-cream rounded-lg hover:bg-venice-beige transition-colors cursor-pointer"
                 >
-                  <div className="w-10 h-10 bg-venice-bright-red rounded-full flex items-center justify-center shadow-sm">
-                    <span className="text-white text-sm font-medium">{character1Name.charAt(0)}</span>
+                  <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm flex-shrink-0">
+                    {character1Details?.photoUrl ? (
+                      <img
+                        src={getSafePhotoUrl(character1Details.photoUrl)}
+                        alt={`${character1Name} avatar`}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = 'none';
+                          const parent = (e.currentTarget.parentElement as HTMLDivElement);
+                          if (parent) parent.className = 'w-10 h-10 bg-venice-bright-red rounded-full flex items-center justify-center shadow-sm';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-10 h-10 bg-venice-bright-red rounded-full flex items-center justify-center shadow-sm">
+                        <span className="text-white text-sm font-medium">{character1Name.charAt(0)}</span>
+                      </div>
+                    )}
                   </div>
                   <span className="text-sm font-medium text-venice-dark-olive">{character1Name}</span>
                 </div>
                 <div 
-                  onClick={() => handleCharacterClick(character2Details, character2Name)}
+                  onClick={() => handleCharacterClick(character2Details)}
                   className="flex items-center space-x-3 p-3 bg-venice-cream rounded-lg hover:bg-venice-beige transition-colors cursor-pointer"
                 >
-                  <div className="w-10 h-10 bg-venice-olive-brown rounded-full flex items-center justify-center shadow-sm">
-                    <span className="text-white text-sm font-medium">{character2Name.charAt(0)}</span>
+                  <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm flex-shrink-0">
+                    {character2Details?.photoUrl ? (
+                      <img
+                        src={getSafePhotoUrl(character2Details.photoUrl)}
+                        alt={`${character2Name} avatar`}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = 'none';
+                          const parent = (e.currentTarget.parentElement as HTMLDivElement);
+                          if (parent) parent.className = 'w-10 h-10 bg-venice-olive-brown rounded-full flex items-center justify-center shadow-sm';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-10 h-10 bg-venice-olive-brown rounded-full flex items-center justify-center shadow-sm">
+                        <span className="text-white text-sm font-medium">{character2Name.charAt(0)}</span>
+                      </div>
+                    )}
                   </div>
                   <span className="text-sm font-medium text-venice-dark-olive">{character2Name}</span>
                 </div>
@@ -194,6 +229,8 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
         currentTurn={currentTurn}
         character1Name={character1Name}
         character2Name={character2Name}
+        character1Details={character1Details}
+        character2Details={character2Details}
       />
 
       {/* Fixed Bottom Bar - WhatsApp-style */}
@@ -266,6 +303,29 @@ const ChatroomPage: React.FC<ChatroomPageProps> = ({
             {/* Popup Content */}
             <div className="p-4 flex-1 overflow-y-auto">
               <div className="space-y-3">
+                {/* Character Photo */}
+                <div className="w-full rounded-lg overflow-hidden border border-venice-stone border-opacity-20 bg-venice-cream">
+                  {selectedCharacterForPopup.photoUrl ? (
+                    <img
+                      src={getSafePhotoUrl(selectedCharacterForPopup.photoUrl)}
+                      alt={`${selectedCharacterForPopup.name} photo`}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-56 object-cover"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div className="h-56 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full bg-venice-cream flex items-center justify-center border border-venice-stone border-opacity-30 shadow-sm">
+                        <span className="font-semibold text-venice-olive-brown text-xl">
+                          {selectedCharacterForPopup.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 {/* Character Name */}
                 <div>
                   <h3 className="text-lg font-bold text-venice-olive-brown mb-1 leading-tight">

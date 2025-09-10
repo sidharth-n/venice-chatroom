@@ -2,6 +2,8 @@ import React, { useRef, useEffect } from 'react';
 import { Message as MessageType } from '../types';
 import Message from './Message';
 import ThinkingIndicator from './ThinkingIndicator';
+import { VeniceCharacter } from '../services/veniceApi';
+import { getSafePhotoUrl } from '../utils';
 
 interface MessageListProps {
   messages: MessageType[];
@@ -9,6 +11,8 @@ interface MessageListProps {
   currentTurn: 1 | 2;
   character1Name: string;
   character2Name: string;
+  character1Details?: VeniceCharacter;
+  character2Details?: VeniceCharacter;
 }
 
 const MessageList: React.FC<MessageListProps> = ({
@@ -16,7 +20,9 @@ const MessageList: React.FC<MessageListProps> = ({
   isGenerating,
   currentTurn,
   character1Name,
-  character2Name
+  character2Name,
+  character1Details,
+  character2Details
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -53,6 +59,13 @@ const MessageList: React.FC<MessageListProps> = ({
               key={message.id}
               message={message}
               isLeftSide={isLeftSide}
+              avatarUrl={
+                message.character === character1Name
+                  ? getSafePhotoUrl(character1Details?.photoUrl)
+                  : message.character === character2Name
+                  ? getSafePhotoUrl(character2Details?.photoUrl)
+                  : undefined
+              }
             />
           );
         })}
@@ -62,6 +75,7 @@ const MessageList: React.FC<MessageListProps> = ({
           <ThinkingIndicator
             characterName={currentTurn === 1 ? character1Name : character2Name}
             isLeftSide={messages.filter(m => m.character !== 'User' && m.character !== 'You').length % 2 === 0}
+            avatarUrl={currentTurn === 1 ? getSafePhotoUrl(character1Details?.photoUrl) : getSafePhotoUrl(character2Details?.photoUrl)}
           />
         )}
         
